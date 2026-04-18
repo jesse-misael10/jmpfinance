@@ -1,0 +1,446 @@
+[
+    {
+        "id": 1774915850,
+        "modalidade": "Capital de Giro",
+        "banco": "BRADESCO",
+        "valor_principal": 100000.0,
+        "taxa_mensal": 1.5,
+        "prazo": 48,
+        "parcela": 2937.5,
+        "total_final": 141000.0,
+        "fluxo": [
+            {
+                "n": 1,
+                "data_sort": "2026-04-20",
+                "data_tela": "20/04/2026",
+                "parcela": 2937.5,
+                "juros": 1500.0,
+                "amortizacao": 1437.5,
+                "saldo": 98562.5
+            },
+            {
+                "n": 2,
+                "data_sort": "2026-05-20",
+                "data_tela": "20/05/2026",
+                "parcela": 2937.5,
+                "juros": 1478.44,
+                "amortizacao": 1459.06,
+                "saldo": 97103.44
+            },
+            {
+                "n": 3,
+                "data_sort": "2026-06-20",
+                "data_tela": "20/06/2026",
+                "parcela": 2937.5,
+                "juros": 1456.55,
+                "amortizacao": 1480.95,
+                "saldo": 95622.49
+            },
+            {
+                "n": 4,
+                "data_sort": "2026-07-20",
+                "data_tela": "20/07/2026",
+                "parcela": 2937.5,
+                "juros": 1434.34,
+                "amortizacao": 1503.16,
+                "saldo": 94119.33
+            },
+            {
+                "n": 5,
+                "data_sort": "2026-08-20",
+                "data_tela": "20/08/2026",
+                "parcela": 2937.5,
+                "juros": 1411.79,
+                "amortizacao": 1525.71,
+                "saldo": 92593.62
+            },
+            {
+                "n": 6,
+                "data_sort": "2026-09-20",
+                "data_tela": "20/09/2026",
+                "parcela": 2937.5,
+                "juros": 1388.9,
+                "amortizacao": 1548.6,
+                "saldo": 91045.02
+            },
+            {
+                "n": 7,
+                "data_sort": "2026-10-20",
+                "data_tela": "20/10/2026",
+                "parcela": 2937.5,
+                "juros": 1365.68,
+                "amortizacao": 1571.82,
+                "saldo": 89473.2
+            },
+            {
+                "n": 8,
+                "data_sort": "2026-11-20",
+                "data_tela": "20/11/2026",
+                "parcela": 2937.5,
+                "juros": 1342.1,
+                "amortizacao": 1595.4,
+                "saldo": 87877.79
+            },
+            {
+                "n": 9,
+                "data_sort": "2026-12-20",
+                "data_tela": "20/12/2026",
+                "parcela": 2937.5,
+                "juros": 1318.17,
+                "amortizacao": 1619.33,
+                "saldo": 86258.46
+            },
+            {
+                "n": 10,
+                "data_sort": "2027-01-20",
+                "data_tela": "20/01/2027",
+                "parcela": 2937.5,
+                "juros": 1293.88,
+                "amortizacao": 1643.62,
+                "saldo": 84614.84
+            },
+            {
+                "n": 11,
+                "data_sort": "2027-02-20",
+                "data_tela": "20/02/2027",
+                "parcela": 2937.5,
+                "juros": 1269.22,
+                "amortizacao": 1668.28,
+                "saldo": 82946.56
+            },
+            {
+                "n": 12,
+                "data_sort": "2027-03-20",
+                "data_tela": "20/03/2027",
+                "parcela": 2937.5,
+                "juros": 1244.2,
+                "amortizacao": 1693.3,
+                "saldo": 81253.26
+            },
+            {
+                "n": 13,
+                "data_sort": "2027-04-20",
+                "data_tela": "20/04/2027",
+                "parcela": 2937.5,
+                "juros": 1218.8,
+                "amortizacao": 1718.7,
+                "saldo": 79534.56
+            },
+            {
+                "n": 14,
+                "data_sort": "2027-05-20",
+                "data_tela": "20/05/2027",
+                "parcela": 2937.5,
+                "juros": 1193.02,
+                "amortizacao": 1744.48,
+                "saldo": 77790.08
+            },
+            {
+                "n": 15,
+                "data_sort": "2027-06-20",
+                "data_tela": "20/06/2027",
+                "parcela": 2937.5,
+                "juros": 1166.85,
+                "amortizacao": 1770.65,
+                "saldo": 76019.43
+            },
+            {
+                "n": 16,
+                "data_sort": "2027-07-20",
+                "data_tela": "20/07/2027",
+                "parcela": 2937.5,
+                "juros": 1140.29,
+                "amortizacao": 1797.21,
+                "saldo": 74222.22
+            },
+            {
+                "n": 17,
+                "data_sort": "2027-08-20",
+                "data_tela": "20/08/2027",
+                "parcela": 2937.5,
+                "juros": 1113.33,
+                "amortizacao": 1824.17,
+                "saldo": 72398.05
+            },
+            {
+                "n": 18,
+                "data_sort": "2027-09-20",
+                "data_tela": "20/09/2027",
+                "parcela": 2937.5,
+                "juros": 1085.97,
+                "amortizacao": 1851.53,
+                "saldo": 70546.52
+            },
+            {
+                "n": 19,
+                "data_sort": "2027-10-20",
+                "data_tela": "20/10/2027",
+                "parcela": 2937.5,
+                "juros": 1058.2,
+                "amortizacao": 1879.3,
+                "saldo": 68667.22
+            },
+            {
+                "n": 20,
+                "data_sort": "2027-11-20",
+                "data_tela": "20/11/2027",
+                "parcela": 2937.5,
+                "juros": 1030.01,
+                "amortizacao": 1907.49,
+                "saldo": 66759.73
+            },
+            {
+                "n": 21,
+                "data_sort": "2027-12-20",
+                "data_tela": "20/12/2027",
+                "parcela": 2937.5,
+                "juros": 1001.4,
+                "amortizacao": 1936.1,
+                "saldo": 64823.63
+            },
+            {
+                "n": 22,
+                "data_sort": "2028-01-20",
+                "data_tela": "20/01/2028",
+                "parcela": 2937.5,
+                "juros": 972.35,
+                "amortizacao": 1965.15,
+                "saldo": 62858.48
+            },
+            {
+                "n": 23,
+                "data_sort": "2028-02-20",
+                "data_tela": "20/02/2028",
+                "parcela": 2937.5,
+                "juros": 942.88,
+                "amortizacao": 1994.62,
+                "saldo": 60863.86
+            },
+            {
+                "n": 24,
+                "data_sort": "2028-03-20",
+                "data_tela": "20/03/2028",
+                "parcela": 2937.5,
+                "juros": 912.96,
+                "amortizacao": 2024.54,
+                "saldo": 58839.31
+            },
+            {
+                "n": 25,
+                "data_sort": "2028-04-20",
+                "data_tela": "20/04/2028",
+                "parcela": 2937.5,
+                "juros": 882.59,
+                "amortizacao": 2054.91,
+                "saldo": 56784.4
+            },
+            {
+                "n": 26,
+                "data_sort": "2028-05-20",
+                "data_tela": "20/05/2028",
+                "parcela": 2937.5,
+                "juros": 851.77,
+                "amortizacao": 2085.73,
+                "saldo": 54698.67
+            },
+            {
+                "n": 27,
+                "data_sort": "2028-06-20",
+                "data_tela": "20/06/2028",
+                "parcela": 2937.5,
+                "juros": 820.48,
+                "amortizacao": 2117.02,
+                "saldo": 52581.65
+            },
+            {
+                "n": 28,
+                "data_sort": "2028-07-20",
+                "data_tela": "20/07/2028",
+                "parcela": 2937.5,
+                "juros": 788.72,
+                "amortizacao": 2148.78,
+                "saldo": 50432.88
+            },
+            {
+                "n": 29,
+                "data_sort": "2028-08-20",
+                "data_tela": "20/08/2028",
+                "parcela": 2937.5,
+                "juros": 756.49,
+                "amortizacao": 2181.01,
+                "saldo": 48251.87
+            },
+            {
+                "n": 30,
+                "data_sort": "2028-09-20",
+                "data_tela": "20/09/2028",
+                "parcela": 2937.5,
+                "juros": 723.78,
+                "amortizacao": 2213.72,
+                "saldo": 46038.15
+            },
+            {
+                "n": 31,
+                "data_sort": "2028-10-20",
+                "data_tela": "20/10/2028",
+                "parcela": 2937.5,
+                "juros": 690.57,
+                "amortizacao": 2246.93,
+                "saldo": 43791.22
+            },
+            {
+                "n": 32,
+                "data_sort": "2028-11-20",
+                "data_tela": "20/11/2028",
+                "parcela": 2937.5,
+                "juros": 656.87,
+                "amortizacao": 2280.63,
+                "saldo": 41510.59
+            },
+            {
+                "n": 33,
+                "data_sort": "2028-12-20",
+                "data_tela": "20/12/2028",
+                "parcela": 2937.5,
+                "juros": 622.66,
+                "amortizacao": 2314.84,
+                "saldo": 39195.75
+            },
+            {
+                "n": 34,
+                "data_sort": "2029-01-20",
+                "data_tela": "20/01/2029",
+                "parcela": 2937.5,
+                "juros": 587.94,
+                "amortizacao": 2349.56,
+                "saldo": 36846.18
+            },
+            {
+                "n": 35,
+                "data_sort": "2029-02-20",
+                "data_tela": "20/02/2029",
+                "parcela": 2937.5,
+                "juros": 552.69,
+                "amortizacao": 2384.81,
+                "saldo": 34461.38
+            },
+            {
+                "n": 36,
+                "data_sort": "2029-03-20",
+                "data_tela": "20/03/2029",
+                "parcela": 2937.5,
+                "juros": 516.92,
+                "amortizacao": 2420.58,
+                "saldo": 32040.8
+            },
+            {
+                "n": 37,
+                "data_sort": "2029-04-20",
+                "data_tela": "20/04/2029",
+                "parcela": 2937.5,
+                "juros": 480.61,
+                "amortizacao": 2456.89,
+                "saldo": 29583.91
+            },
+            {
+                "n": 38,
+                "data_sort": "2029-05-20",
+                "data_tela": "20/05/2029",
+                "parcela": 2937.5,
+                "juros": 443.76,
+                "amortizacao": 2493.74,
+                "saldo": 27090.17
+            },
+            {
+                "n": 39,
+                "data_sort": "2029-06-20",
+                "data_tela": "20/06/2029",
+                "parcela": 2937.5,
+                "juros": 406.35,
+                "amortizacao": 2531.15,
+                "saldo": 24559.02
+            },
+            {
+                "n": 40,
+                "data_sort": "2029-07-20",
+                "data_tela": "20/07/2029",
+                "parcela": 2937.5,
+                "juros": 368.39,
+                "amortizacao": 2569.11,
+                "saldo": 21989.9
+            },
+            {
+                "n": 41,
+                "data_sort": "2029-08-20",
+                "data_tela": "20/08/2029",
+                "parcela": 2937.5,
+                "juros": 329.85,
+                "amortizacao": 2607.65,
+                "saldo": 19382.25
+            },
+            {
+                "n": 42,
+                "data_sort": "2029-09-20",
+                "data_tela": "20/09/2029",
+                "parcela": 2937.5,
+                "juros": 290.73,
+                "amortizacao": 2646.77,
+                "saldo": 16735.49
+            },
+            {
+                "n": 43,
+                "data_sort": "2029-10-20",
+                "data_tela": "20/10/2029",
+                "parcela": 2937.5,
+                "juros": 251.03,
+                "amortizacao": 2686.47,
+                "saldo": 14049.02
+            },
+            {
+                "n": 44,
+                "data_sort": "2029-11-20",
+                "data_tela": "20/11/2029",
+                "parcela": 2937.5,
+                "juros": 210.74,
+                "amortizacao": 2726.76,
+                "saldo": 11322.25
+            },
+            {
+                "n": 45,
+                "data_sort": "2029-12-20",
+                "data_tela": "20/12/2029",
+                "parcela": 2937.5,
+                "juros": 169.83,
+                "amortizacao": 2767.67,
+                "saldo": 8554.59
+            },
+            {
+                "n": 46,
+                "data_sort": "2030-01-20",
+                "data_tela": "20/01/2030",
+                "parcela": 2937.5,
+                "juros": 128.32,
+                "amortizacao": 2809.18,
+                "saldo": 5745.41
+            },
+            {
+                "n": 47,
+                "data_sort": "2030-02-20",
+                "data_tela": "20/02/2030",
+                "parcela": 2937.5,
+                "juros": 86.18,
+                "amortizacao": 2851.32,
+                "saldo": 2894.09
+            },
+            {
+                "n": 48,
+                "data_sort": "2030-03-20",
+                "data_tela": "20/03/2030",
+                "parcela": 2937.5,
+                "juros": 43.41,
+                "amortizacao": 2894.09,
+                "saldo": 0
+            }
+        ]
+    }
+]

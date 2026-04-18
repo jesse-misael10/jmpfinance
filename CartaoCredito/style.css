@@ -1,0 +1,486 @@
+/* ============================================================
+   CARTÃO DE CRÉDITO — style.css
+   Depende de ../_shared/tokens.css
+   ============================================================ */
+
+body { display: flex; flex-direction: column; }
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-panel {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem;
+  gap: 1rem;
+}
+.tab-panel.active { display: flex; }
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ============================================================
+   CATEGORIA LIST
+   ============================================================ */
+.cat-list {
+  padding: .75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.cat-item {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.cat-label {
+  font-size: .82rem;
+  color: var(--c-text);
+  min-width: 130px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cat-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: var(--c-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cat-bar {
+  height: 100%;
+  background: var(--c-blue);
+  border-radius: 3px;
+  transition: width .3s;
+}
+
+.cat-value {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
+  min-width: 80px;
+  text-align: right;
+}
+
+/* ============================================================
+   FATURAS LIST
+   ============================================================ */
+.faturas-list {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.fatura-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: box-shadow .15s, border-color .15s;
+}
+.fatura-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--c-blue);
+}
+
+.fatura-card-color {
+  width: 6px;
+  min-width: 6px;
+  height: 48px;
+  border-radius: 3px;
+}
+
+.fatura-card-info {
+  flex: 1;
+}
+
+.fatura-card-title {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--c-navy);
+}
+
+.fatura-card-sub {
+  font-size: .76rem;
+  color: var(--c-muted);
+  margin-top: 2px;
+}
+
+.fatura-card-valor {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--c-red);
+  font-variant-numeric: tabular-nums;
+}
+
+.fatura-card-count {
+  font-size: .75rem;
+  color: var(--c-muted);
+  text-align: right;
+}
+
+.fatura-card-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-left: .5rem;
+}
+
+/* ============================================================
+   LANÇAMENTOS TABLE
+   ============================================================ */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--c-border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.data-table thead th {
+  background: var(--c-navy);
+  color: #fff;
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.data-table tbody tr:hover td { background: var(--c-bg); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+
+.th-num { text-align: right !important; }
+.td-num  { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.td-muted { color: var(--c-muted); font-size: .78rem; }
+.td-main  { font-weight: 600; color: #1e293b; }
+
+.val-neg { color: var(--c-red); }
+.val-pos { color: var(--c-green); }
+
+.table-footer {
+  padding: .6rem 1.25rem;
+  font-size: .78rem;
+  color: var(--c-muted);
+  border-top: 1px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.table-footer strong {
+  color: var(--c-text);
+  font-weight: 700;
+}
+
+.empty-cell {
+  text-align: center !important;
+  color: var(--c-muted);
+  font-style: italic;
+  padding: 2rem !important;
+}
+
+/* ============================================================
+   CARTOES GRID
+   ============================================================ */
+.cartoes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.cartao-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.cartao-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--card-color, var(--c-blue));
+}
+
+.cartao-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.cartao-card-nome {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--c-navy);
+}
+
+.cartao-card-banco {
+  font-size: .76rem;
+  color: var(--c-muted);
+  margin-top: 2px;
+}
+
+.cartao-card-num {
+  font-size: .8rem;
+  color: var(--c-muted);
+  letter-spacing: .08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cartao-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .5rem;
+}
+
+.cartao-stat {
+  background: var(--c-bg);
+  border-radius: calc(var(--radius) - 2px);
+  padding: .5rem .75rem;
+}
+
+.cartao-stat-label {
+  font-size: .68rem;
+  color: var(--c-muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.cartao-stat-value {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.cartao-card-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* ============================================================
+   CHIP — cartão badge na tabela
+   ============================================================ */
+.chip-cartao {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: var(--chip-bg, #e2e8f0);
+  color: var(--chip-fg, #475569);
+  white-space: nowrap;
+}
+
+.chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ============================================================
+   BADGE PARCELA
+   ============================================================ */
+.badge-parc {
+  display: inline-block;
+  font-size: .7rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--c-blue-lt, #eff6ff);
+  color: var(--c-blue);
+  font-weight: 600;
+}
+
+/* ============================================================
+   IMPORT MODAL
+   ============================================================ */
+.modal-import-box {
+  max-width: 560px;
+  width: 100%;
+}
+
+.import-drop-area {
+  border: 2px dashed var(--c-border-md);
+  border-radius: var(--radius);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
+  margin: .75rem 0;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.import-drop-area:hover,
+.import-drop-area.dragover {
+  border-color: var(--c-blue);
+  background: var(--c-blue-lt, #eff6ff);
+}
+
+.import-icon { font-size: 2.5rem; }
+.import-title-text { font-size: .9rem; font-weight: 700; color: var(--c-navy); }
+.import-sub { font-size: .76rem; color: var(--c-muted); }
+
+/* ── File list items ── */
+.import-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin: .75rem 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.import-file-item {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .75rem 1rem;
+  background: var(--c-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--c-border);
+}
+
+.import-file-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+.import-file-info { flex: 1; min-width: 0; }
+.import-file-name { font-size: .82rem; font-weight: 600; color: var(--c-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.import-file-bank { font-size: .74rem; color: var(--c-muted); }
+.import-file-status { font-size: .76rem; margin-top: 2px; }
+.import-file-status.ok  { color: var(--c-green); }
+.import-file-status.err { color: var(--c-red); }
+.import-file-status.loading { color: var(--c-amber); }
+
+.import-tx-preview {
+  font-size: .72rem;
+  color: var(--c-muted);
+  margin-top: 4px;
+  max-height: 80px;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   FATURA DETAIL MODAL
+   ============================================================ */
+.modal-fatura-box {
+  max-width: 700px;
+  width: 100%;
+}
+
+.fatura-modal-info {
+  display: flex;
+  gap: 1.5rem;
+  margin: .75rem 0;
+  flex-wrap: wrap;
+}
+
+.fatura-info-item { display: flex; flex-direction: column; gap: 2px; }
+.fatura-info-label { font-size: .7rem; color: var(--c-muted); text-transform: uppercase; letter-spacing: .04em; }
+.fatura-info-value { font-size: .9rem; font-weight: 700; color: var(--c-text); }
+
+/* ============================================================
+   COLOR PICKER
+   ============================================================ */
+.color-picker-row {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-top: .25rem;
+}
+
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color .15s, transform .1s;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.selected { border-color: var(--c-navy); }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: 3rem 1.5rem;
+  color: var(--c-muted);
+  font-size: .85rem;
+  text-align: center;
+}
+
+/* ============================================================
+   PROGRESS BAR (import)
+   ============================================================ */
+.progress-bar-wrap {
+  height: 4px;
+  background: var(--c-border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.progress-bar {
+  height: 100%;
+  background: var(--c-blue);
+  border-radius: 2px;
+  transition: width .2s;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 800px) {
+  .dash-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .tab-panel { padding: 1rem; }
+  .cartoes-grid { grid-template-columns: 1fr; }
+}

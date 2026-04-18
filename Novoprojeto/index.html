@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faturamento + FEE — DaaS | JMP Finance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────── -->
+<header id="header">
+  <div class="header-inner">
+    <span class="brand-badge">FEE</span>
+    <span class="header-title">Faturamento + FEE — DaaS</span>
+
+    <nav class="header-tabs">
+      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="lancamentos">Lançamentos</button>
+      <button class="tab-btn" data-tab="bus">BUs</button>
+      <button class="tab-btn" data-tab="config">Configurações</button>
+    </nav>
+
+    <button class="btn-pdf" id="btn-pdf" disabled>&#11015; Gerar PDF</button>
+  </div>
+</header>
+
+<!-- ── Main ────────────────────────────────────────────────── -->
+<main class="main-content">
+
+  <!-- ========================================================
+       TAB: DASHBOARD
+       ======================================================== -->
+  <section id="tab-dashboard" class="tab-panel active">
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <label for="dash-ano">Ano</label>
+      <select id="dash-ano"><!-- populated by JS --></select>
+
+      <label for="dash-mes">Mês</label>
+      <select id="dash-mes">
+        <option value="1">Jan</option>
+        <option value="2">Fev</option>
+        <option value="3">Mar</option>
+        <option value="4">Abr</option>
+        <option value="5">Mai</option>
+        <option value="6">Jun</option>
+        <option value="7">Jul</option>
+        <option value="8">Ago</option>
+        <option value="9">Set</option>
+        <option value="10">Out</option>
+        <option value="11">Nov</option>
+        <option value="12">Dez</option>
+      </select>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Faturamento (Mensal)</div>
+        <div class="kpi-value" id="kpi-fat">R$ —</div>
+        <div class="kpi-sub">Faturamento realizado no mês</div>
+      </div>
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-label">Total FEE (Mensal)</div>
+        <div class="kpi-value" id="kpi-fee">R$ —</div>
+        <div class="kpi-sub">FEE realizado no mês</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">% FEE Geral</div>
+        <div class="kpi-value" id="kpi-pct-fee">0,0%</div>
+        <div class="kpi-sub">FEE / Faturamento</div>
+      </div>
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-label">vs Budget Faturamento</div>
+        <div class="kpi-value" id="kpi-bud">+ 0% ▲</div>
+        <div class="kpi-sub">Variação vs Budget</div>
+      </div>
+    </div>
+
+    <!-- Tabela Mensal -->
+    <div class="section-wrap">
+      <div class="section-header">
+        <span id="sec-mensal-title">Demonstração Mensal</span>
+      </div>
+      <div id="tbl-mensal"></div>
+    </div>
+
+    <!-- Tabela YTD -->
+    <div class="section-wrap">
+      <div class="section-header">
+        <span id="sec-ytd-title">Acumulado YTD</span>
+      </div>
+      <div id="tbl-ytd"></div>
+    </div>
+
+  </section><!-- /tab-dashboard -->
+
+  <!-- ========================================================
+       TAB: LANÇAMENTOS
+       ======================================================== -->
+  <section id="tab-lancamentos" class="tab-panel">
+
+    <div class="lanc-toolbar">
+      <div class="filter-bar" style="margin-bottom:0">
+        <label for="lanc-ano">Ano</label>
+        <select id="lanc-ano"><!-- populated by JS --></select>
+
+        <label for="lanc-mes">Mês</label>
+        <select id="lanc-mes">
+          <option value="1">Jan</option>
+          <option value="2">Fev</option>
+          <option value="3">Mar</option>
+          <option value="4">Abr</option>
+          <option value="5">Mai</option>
+          <option value="6">Jun</option>
+          <option value="7">Jul</option>
+          <option value="8">Ago</option>
+          <option value="9">Set</option>
+          <option value="10">Out</option>
+          <option value="11">Nov</option>
+          <option value="12">Dez</option>
+        </select>
+      </div>
+
+      <button class="btn btn-secondary" id="btn-copiar-budget">
+        &#8645; Copiar Budget do Mês Anterior
+      </button>
+    </div>
+
+    <div class="table-scroll">
+      <div id="lanc-table-wrap"></div>
+    </div>
+
+    <!-- Notas -->
+    <div class="notas-wrap" id="notas-wrap">
+      <div class="notas-label">Notas do mês</div>
+      <textarea
+        id="notas-textarea"
+        class="notas-textarea"
+        placeholder="Digite observações para este mês (cada linha vira um bullet no PDF)..."
+      ></textarea>
+    </div>
+
+  </section><!-- /tab-lancamentos -->
+
+  <!-- ========================================================
+       TAB: BUs
+       ======================================================== -->
+  <section id="tab-bus" class="tab-panel">
+
+    <div class="bu-toolbar">
+      <button class="btn btn-primary" id="btn-nova-bu">+ Nova BU</button>
+    </div>
+
+    <div id="bu-list" class="bu-list"></div>
+
+  </section><!-- /tab-bus -->
+
+  <!-- ========================================================
+       TAB: CONFIGURAÇÕES
+       ======================================================== -->
+  <section id="tab-config" class="tab-panel">
+
+    <div class="config-grid">
+
+      <div class="config-card">
+        <h3>Relatório</h3>
+
+        <div class="field-group">
+          <label for="cfg-nome">Nome do Relatório</label>
+          <input type="text" id="cfg-nome" value="DaaS" placeholder="DaaS">
+        </div>
+
+        <div class="field-group">
+          <label for="cfg-ano">Ano de Referência</label>
+          <input type="number" id="cfg-ano" value="2026" min="2020" max="2040">
+        </div>
+
+        <button class="btn btn-primary mt-3" id="btn-save-config">Salvar Configurações</button>
+      </div>
+
+      <div class="config-card">
+        <h3>Logo</h3>
+
+        <div class="field-group">
+          <label for="cfg-logo-input">Upload de Logo (PNG/JPG)</label>
+          <input type="file" id="cfg-logo-input" accept="image/*">
+        </div>
+
+        <img id="cfg-logo-preview" class="logo-preview" src="" alt="Logo preview" style="display:none">
+
+        <button class="btn btn-danger btn-sm mt-2" id="btn-remove-logo">Remover Logo</button>
+      </div>
+
+      <div class="config-card">
+        <h3>Backup de Dados</h3>
+        <p class="text-muted" style="font-size:0.82rem;margin-bottom:14px">
+          Exporte todos os dados em JSON para backup ou importe um arquivo de backup anterior.
+        </p>
+        <div class="data-actions">
+          <button class="btn btn-secondary" id="btn-export">&#11015; Exportar Dados (JSON)</button>
+          <button class="btn btn-secondary" id="btn-import">&#11014; Importar Dados (JSON)</button>
+        </div>
+      </div>
+
+    </div><!-- /config-grid -->
+
+  </section><!-- /tab-config -->
+
+</main><!-- /main-content -->
+
+<!-- ── BU Modal ─────────────────────────────────────────────── -->
+<div class="modal-overlay" id="bu-modal" role="dialog" aria-modal="true" aria-labelledby="bu-modal-title">
+  <div class="modal-box">
+    <div class="modal-title" id="bu-modal-title">Nova BU</div>
+
+    <input type="hidden" id="bu-form-id">
+
+    <div class="field-group">
+      <label for="bu-form-nome">Nome da BU *</label>
+      <input type="text" id="bu-form-nome" placeholder="Ex.: Previdência" autofocus>
+    </div>
+
+    <div class="field-group">
+      <label for="bu-form-pct">% FEE Contratado (0–100, opcional)</label>
+      <input type="number" id="bu-form-pct" placeholder="Ex.: 6" min="0" max="100" step="0.01">
+    </div>
+
+    <div class="field-group" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="bu-form-ativa" checked style="width:auto">
+      <label for="bu-form-ativa" style="margin-bottom:0;text-transform:none;letter-spacing:0">BU Ativa</label>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="bu-modal-cancel">Cancelar</button>
+      <button class="btn btn-primary"   id="bu-modal-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ────────────────────────────────────────────────── -->
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- ── CDN Libraries ────────────────────────────────────────── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<!-- ── App ─────────────────────────────────────────────────── -->
+<script src="app.js"></script>
+
+</body>
+</html>

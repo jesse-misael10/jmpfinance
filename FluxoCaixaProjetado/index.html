@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fluxo de Caixa Projetado</title>
+  <link rel="stylesheet" href="../_shared/tokens.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header class="app-header">
+  <div class="header-left">
+    <span class="brand-badge">FCP</span>
+    <div class="header-titles">
+      <span class="header-main-title" id="hdr-relatorio">Fluxo de Caixa Projetado</span>
+      <span class="header-subtitle" id="hdr-empresa">Empresa</span>
+    </div>
+  </div>
+  <nav class="tab-nav" id="tab-nav">
+    <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="tab-btn" data-tab="lancamentos">✏️ Lançamentos</button>
+    <button class="tab-btn" data-tab="estrutura">🗂️ Estrutura</button>
+    <button class="tab-btn" data-tab="configuracoes">⚙️ Configurações</button>
+  </nav>
+  <div class="header-right">
+    <button class="btn btn-primary" id="btn-export-pdf">⬇ Exportar PDF</button>
+  </div>
+</header>
+
+<!-- ===================== MAIN CONTENT ===================== -->
+<main class="app-main">
+
+  <!-- ========= TAB: DASHBOARD ========= -->
+  <section class="tab-panel active" id="tab-dashboard">
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label for="filter-ano">Ano:</label>
+        <select id="filter-ano" class="select-input"></select>
+      </div>
+      <div class="filter-group">
+        <label>Visualização:</label>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="btn-view-mensal">Mensal</button>
+          <button class="toggle-btn" id="btn-view-trimestral">Trimestral</button>
+          <button class="toggle-btn" id="btn-view-diario">Diário</button>
+        </div>
+      </div>
+      <div class="filter-group" id="filter-group-mes-diario" style="display:none;">
+        <label for="filter-mes-diario">Mês:</label>
+        <select id="filter-mes-diario" class="select-input"></select>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-row" id="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Situação do Caixa (Dez)</div>
+        <div class="kpi-value" id="kpi-situacao">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Entradas do Ano</div>
+        <div class="kpi-value kpi-green" id="kpi-entradas">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Saídas do Ano</div>
+        <div class="kpi-value kpi-red" id="kpi-saidas">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Geração de Caixa Acumulada</div>
+        <div class="kpi-value" id="kpi-geracao">-</div>
+      </div>
+    </div>
+
+    <!-- DFC Table (mensal / trimestral) -->
+    <div id="dfc-wrapper">
+      <div class="table-wrapper">
+        <table class="dfc-table" id="dfc-table"></table>
+      </div>
+    </div>
+
+    <!-- Daily view -->
+    <div id="daily-wrapper" style="display:none;"></div>
+
+    <!-- Inline edit popover (saldo inicial) -->
+    <div class="edit-popover" id="edit-popover" style="display:none;">
+      <div class="edit-popover-inner">
+        <div class="edit-popover-title" id="ep-title"></div>
+        <input type="number" step="any" id="ep-input" class="ep-input" placeholder="0" />
+        <div class="edit-popover-actions">
+          <button class="btn btn-sm btn-ghost" id="ep-cancel">Cancelar</button>
+          <button class="btn btn-sm btn-primary" id="ep-save">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ========= TAB: LANÇAMENTOS ========= -->
+  <section class="tab-panel" id="tab-lancamentos">
+    <div class="lanc-layout">
+
+      <!-- Left: month selector -->
+      <div class="lanc-left">
+        <div class="lanc-left-header">
+          <div class="section-title">Mês</div>
+          <select id="lanc-ano-sel" class="select-input select-sm"></select>
+        </div>
+        <div class="month-grid" id="month-grid"></div>
+      </div>
+
+      <!-- Right: transaction list -->
+      <div class="lanc-right" id="lanc-right">
+        <div class="lanc-right-header">
+          <div>
+            <h2 class="lanc-mes-title" id="lanc-mes-title">Selecione um mês</h2>
+            <div class="lanc-mes-status" id="lanc-mes-status"></div>
+          </div>
+          <div class="lanc-right-actions">
+            <button class="btn btn-sm btn-primary" id="btn-novo-lancamento">+ Novo Lançamento</button>
+            <button class="btn btn-sm btn-outline" id="btn-toggle-status">Marcar como Realizado</button>
+            <button class="btn btn-sm btn-ghost" id="btn-copiar-anterior">📋 Copiar do mês anterior</button>
+          </div>
+        </div>
+
+        <!-- Transaction list -->
+        <div id="lanc-list" class="lanc-list"></div>
+
+        <!-- Summary -->
+        <div class="lanc-summary" id="lanc-summary"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========= TAB: ESTRUTURA ========= -->
+  <section class="tab-panel" id="tab-estrutura">
+    <div class="estrutura-header">
+      <h2 class="section-title">Estrutura do DFC</h2>
+      <p class="section-desc">Gerencie as linhas do fluxo de caixa. Linhas do sistema (🔒) não podem ser editadas ou excluídas.</p>
+    </div>
+    <div id="estrutura-sections"></div>
+  </section>
+
+  <!-- ========= TAB: CONFIGURAÇÕES ========= -->
+  <section class="tab-panel" id="tab-configuracoes">
+    <div class="config-panel">
+      <h2 class="section-title">Configurações</h2>
+      <div class="config-form">
+        <div class="form-group">
+          <label for="cfg-ano">Ano de Referência</label>
+          <select id="cfg-ano" class="select-input">
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cfg-empresa">Nome da Empresa</label>
+          <input type="text" id="cfg-empresa" class="text-input" placeholder="Ex: Unique" />
+        </div>
+        <div class="form-group">
+          <label for="cfg-relatorio">Nome do Relatório</label>
+          <input type="text" id="cfg-relatorio" class="text-input" placeholder="Ex: Fluxo de Caixa Projetado" />
+        </div>
+        <button class="btn btn-primary" id="btn-save-config">Salvar Configurações</button>
+      </div>
+      <hr class="config-divider" />
+      <h3 class="section-title-sm">Dados</h3>
+      <div class="config-actions">
+        <button class="btn btn-outline" id="btn-export-json">⬇ Exportar JSON</button>
+        <button class="btn btn-outline" id="btn-import-json">⬆ Importar JSON</button>
+        <button class="btn btn-danger" id="btn-clear-data">🗑 Limpar Todos os Dados</button>
+      </div>
+      <input type="file" id="import-file-input" accept=".json" style="display:none;" />
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== TOAST ===================== -->
+<div id="toast" class="toast" style="display:none;"></div>
+
+<!-- ===================== CONFIRM MODAL ===================== -->
+<div class="modal-overlay" id="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Confirmar</div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+      <button class="btn btn-danger" id="modal-confirm">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ADD LINE MODAL ===================== -->
+<div class="modal-overlay" id="add-linha-modal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">Nova Linha</div>
+    <div class="form-group" style="margin-top:1rem;">
+      <label>Nome da Linha</label>
+      <input type="text" id="new-linha-nome" class="text-input" placeholder="Ex: Receita de Serviços" />
+    </div>
+    <div class="form-group">
+      <label>Tipo</label>
+      <select id="new-linha-tipo" class="select-input">
+        <option value="entrada">Entrada (+)</option>
+        <option value="saida">Saída (−)</option>
+      </select>
+    </div>
+    <input type="hidden" id="new-linha-secao" />
+    <div class="modal-actions" style="margin-top:1rem;">
+      <button class="btn btn-ghost" id="add-linha-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="add-linha-confirm">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TRANSACTION MODAL ===================== -->
+<div class="modal-overlay" id="tx-modal" style="display:none;">
+  <div class="modal-box modal-tx">
+    <div class="modal-title" id="tx-modal-title">Novo Lançamento</div>
+
+    <div class="tx-form-grid">
+      <div class="form-group">
+        <label for="tx-data">Data <span class="req">*</span></label>
+        <input type="date" id="tx-data" class="text-input" required />
+      </div>
+      <div class="form-group">
+        <label for="tx-status">Status</label>
+        <select id="tx-status" class="select-input">
+          <option value="projetado">Projetado</option>
+          <option value="realizado">Realizado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top:.75rem;">
+      <label for="tx-linha">Classificação <span class="req">*</span></label>
+      <select id="tx-linha" class="select-input select-full"></select>
+    </div>
+
+    <div class="form-group" style="margin-top:.75rem;">
+      <label for="tx-descricao">Descrição <span class="req">*</span></label>
+      <input type="text" id="tx-descricao" class="text-input" placeholder="Ex: Folha de pagamento" />
+    </div>
+
+    <div class="form-group" style="margin-top:.75rem;">
+      <label for="tx-valor">Valor (R$) <span class="req">*</span></label>
+      <input type="number" id="tx-valor" class="text-input" step="0.01" min="0.01" placeholder="0,00" />
+      <span class="form-hint">Sempre positivo — o sinal é definido pela classificação</span>
+    </div>
+
+    <div class="form-error" id="tx-error" style="display:none;margin-top:.5rem;"></div>
+
+    <div class="modal-actions" style="margin-top:1.25rem;">
+      <button class="btn btn-ghost btn-sm" id="tx-modal-cancel">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="tx-modal-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

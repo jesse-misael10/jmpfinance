@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JMP Finance — Painel</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="_shared/supabase-client.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f1f5f9;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: #0f2044;
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+    .header-badge {
+      background: #fff;
+      color: #0f2044;
+      font-weight: 800;
+      font-size: .8rem;
+      padding: .25rem .5rem;
+      border-radius: 6px;
+      letter-spacing: .05em;
+    }
+    .header-title {
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .header-email {
+      color: #94a3b8;
+      font-size: .8rem;
+    }
+    .btn-logout {
+      background: transparent;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: .3rem .75rem;
+      border-radius: 6px;
+      font-size: .78rem;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-logout:hover { border-color: #64748b; color: #e2e8f0; }
+
+    /* Main */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .page-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: .4rem;
+    }
+    .page-sub {
+      color: #64748b;
+      font-size: .88rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Grid */
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .app-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      transition: box-shadow .15s, transform .15s;
+      border: 1.5px solid transparent;
+    }
+    .app-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,.12);
+      transform: translateY(-2px);
+      border-color: #2563eb;
+    }
+
+    .app-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: .25rem;
+    }
+    .icon-blue   { background: #dbeafe; }
+    .icon-green  { background: #dcfce7; }
+    .icon-purple { background: #f3e8ff; }
+    .icon-orange { background: #ffedd5; }
+    .icon-red    { background: #fee2e2; }
+    .icon-teal   { background: #ccfbf1; }
+    .icon-yellow { background: #fef9c3; }
+    .icon-indigo { background: #e0e7ff; }
+
+    .app-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .app-desc {
+      font-size: .8rem;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .app-arrow {
+      margin-top: auto;
+      padding-top: .75rem;
+      color: #2563eb;
+      font-size: .78rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <span class="header-badge">JMP</span>
+    <span class="header-title">JMP Finance</span>
+  </div>
+  <div class="header-user">
+    <span class="header-email" id="user-email"></span>
+    <button class="btn-logout" id="btn-logout">Sair</button>
+  </div>
+</header>
+
+<main class="main">
+  <div class="page-title">Painel de Aplicativos</div>
+  <div class="page-sub">Selecione um módulo para acessar</div>
+
+  <div class="app-grid">
+
+    <a class="app-card" href="DRE/index.html">
+      <div class="app-icon icon-blue">📊</div>
+      <div class="app-name">DRE</div>
+      <div class="app-desc">Demonstração do Resultado do Exercício — análise mensal e acumulada</div>
+      <div class="app-arrow">Acessar →</div>
+    </a>
+
+    <a class="app-card" href="Novoprojeto/index.html">
+      <div class="app-icon icon-green">💰</div>
+      <div class="app-name">FEE</div>
+      <div class="app-desc">Faturamento + FEE por BU — controle de budget e realizado</div>
+      <div class="app-arrow">Acessar →</div>
+    </a>
+
+    <a class="app-card" href="PFL/index.html">
+      <div class="app-icon icon-purple">📋</div>
+      <div class="app-name">PFL</div>
+      <div class="app-desc">Relatório de Controladoria — DRE mês a mês e acumulado</div>
+      <div class="app-arrow">Acessar →</div>
+    </a>
+
+    <a class="app-card" href="CartaoCredito/index.html">
+      <div class="app-icon icon-orange">💳</div>
+      <div class="app-name">Cartão de Crédito</div>
+      <div class="app-desc">Importação e análise de faturas de cartão corporativo</div>
+      <div class="app-arrow">Acessar →</div>
+    </a>
+
+    <a class="app-card" href="FluxoCaixa/index.html">
+      <div class="app-icon icon-teal">🔄</div>
+      <div class="app-name">Fluxo de Caixa</div>
+      <div class="app-desc">Controle e acompanhamento do fluxo de caixa</div>
+      <div class="app-arrow">Acessar →</div>
+    </a>
+
+    <a class="app-card" href="FluxoCaixaProjetado/index.html">
+      <div class="app-icon icon-indigo">📈</div>
+      <div class="app-name">Fluxo de Caixa Projetado</div>
+      <div class="app-desc">Projeção e planejamento do fluxo de caixa futuro</div>
+      <div class="app-arrow">Acessar →</div>
+    </a>
+
+    <a class="app-card" href="Financiamentos/index.html">
+      <div class="app-icon icon-red">🏦</div>
+      <div class="app-name">Financiamentos</div>
+      <div class="app-desc">Gestão e controle de financiamentos e parcelas</div>
+      <div class="app-arrow">Acessar →</div>
+    </a>
+
+    <a class="app-card" href="Organograma/index.html">
+      <div class="app-icon icon-yellow">🏢</div>
+      <div class="app-name">Organograma</div>
+      <div class="app-desc">Estrutura organizacional da empresa</div>
+      <div class="app-arrow">Acessar →</div>
+    </a>
+
+  </div>
+</main>
+
+<script>
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  (async () => {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) {
+      window.location.href = '_shared/login.html?return=' + encodeURIComponent('/index.html');
+      return;
+    }
+    document.getElementById('user-email').textContent = session.user.email;
+  })();
+
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    await db.auth.signOut();
+    window.location.href = '_shared/login.html';
+  });
+</script>
+
+</body>
+</html>

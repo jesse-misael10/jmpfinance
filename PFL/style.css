@@ -1,0 +1,296 @@
+/* ============================================================
+   PFL — style.css  |  depende de ../_shared/tokens.css
+   ============================================================ */
+
+body { display: flex; flex-direction: column; min-height: 100vh; }
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tab-panel {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem;
+  gap: 1rem;
+  overflow: hidden;
+}
+.tab-panel.active { display: flex; }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.full-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  color: var(--c-muted);
+  text-align: center;
+}
+
+/* ============================================================
+   IMPORT DROP AREA
+   ============================================================ */
+.import-drop-area {
+  border: 2px dashed var(--c-border-md);
+  border-radius: var(--radius);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
+  margin: .75rem 0;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.import-drop-area:hover,
+.import-drop-area.dragover { border-color: var(--c-blue); background: var(--c-blue-lt); }
+
+/* ============================================================
+   KPI RESUMO DRE
+   ============================================================ */
+.kpi-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--c-border);
+}
+
+.kpi-resumo-item {
+  padding: .9rem 1.25rem;
+  border-right: 1px solid var(--c-border);
+  border-bottom: 1px solid var(--c-border);
+}
+.kpi-resumo-item:last-child { border-right: none; }
+
+.kpi-resumo-label {
+  font-size: .7rem;
+  color: var(--c-muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+
+.kpi-resumo-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-resumo-pct {
+  font-size: .74rem;
+  color: var(--c-muted);
+  margin-top: 2px;
+}
+
+.kpi-pos { color: var(--c-green); }
+.kpi-neg { color: var(--c-red); }
+
+/* ============================================================
+   INDICADORES
+   ============================================================ */
+.indicadores-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.indic-list {
+  padding: .5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.indic-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .4rem 0;
+  border-bottom: 1px solid var(--c-border);
+  font-size: .82rem;
+}
+.indic-item:last-child { border-bottom: none; }
+
+.indic-label { color: var(--c-text); }
+.indic-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.data-info {
+  font-size: .75rem;
+  color: var(--c-muted);
+}
+
+/* ============================================================
+   DRE TABLE
+   ============================================================ */
+.dre-wrapper {
+  flex: 1;
+  overflow: auto;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+}
+
+.dre-table {
+  border-collapse: collapse;
+  font-size: .8rem;
+  min-width: 100%;
+  table-layout: fixed;
+}
+
+/* Sticky first column */
+.dre-table th.col-label,
+.dre-table td.col-label {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  min-width: 280px;
+  max-width: 280px;
+  width: 280px;
+  background: inherit;
+}
+
+.dre-table thead th {
+  background: var(--c-navy);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: 8px 12px;
+  text-align: right;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.dre-table thead th.col-label {
+  text-align: left;
+  z-index: 4;
+}
+
+.dre-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--c-border);
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.dre-table td.col-label {
+  text-align: left;
+  background: var(--c-surface);
+}
+
+/* Row types */
+.dre-table tr.row-total td {
+  background: var(--c-navy) !important;
+  color: #fff;
+  font-weight: 700;
+  font-size: .82rem;
+  border-bottom: 2px solid var(--c-navy-md);
+}
+.dre-table tr.row-total td.col-label { background: var(--c-navy) !important; color: #fff; }
+
+.dre-table tr.row-subtotal td {
+  background: #f1f5f9;
+  font-weight: 700;
+  border-bottom: 1px solid var(--c-border-md);
+  color: var(--c-navy);
+}
+.dre-table tr.row-subtotal td.col-label { background: #f1f5f9; }
+
+.dre-table tr.row-group td {
+  font-weight: 700;
+  color: var(--c-navy);
+  background: var(--c-bg);
+  border-bottom: 1px solid var(--c-border);
+}
+.dre-table tr.row-group td.col-label { background: var(--c-bg); }
+
+.dre-table tr.row-account td {
+  color: var(--c-text);
+}
+.dre-table tr.row-account.hidden { display: none; }
+
+.dre-table tr.row-separator td {
+  padding: 3px;
+  background: var(--c-bg);
+  border: none;
+}
+
+.dre-table tbody tr:hover td { filter: brightness(.97); }
+.dre-table tr.row-total:hover td { filter: none; }
+
+/* Indentation via padding */
+.indent-0 { padding-left: 12px !important; }
+.indent-1 { padding-left: 20px !important; }
+.indent-2 { padding-left: 32px !important; }
+.indent-3 { padding-left: 44px !important; }
+.indent-4 { padding-left: 56px !important; }
+
+/* Values */
+.val-pos { color: var(--c-green); }
+.val-neg { color: var(--c-red); }
+.val-zero { color: var(--c-muted); }
+
+/* Toggle expand icon */
+.row-toggle {
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.row-toggle::before {
+  content: '▾';
+  font-size: .65rem;
+  color: var(--c-muted);
+  transition: transform .15s;
+}
+.row-toggle.collapsed::before { transform: rotate(-90deg); }
+
+/* Highlight row on hover */
+.dre-table tr.row-group:hover td,
+.dre-table tr.row-subtotal:hover td { cursor: pointer; }
+
+/* ============================================================
+   TOGGLE GROUP
+   ============================================================ */
+.toggle-group {
+  display: flex;
+  border: 1px solid var(--c-border-md);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.toggle-btn {
+  padding: 4px 12px;
+  font-size: .78rem;
+  font-weight: 600;
+  background: var(--c-surface);
+  color: var(--c-muted);
+  border: none;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.toggle-btn.active {
+  background: var(--c-navy);
+  color: #fff;
+}
+.toggle-btn:not(.active):hover { background: var(--c-bg); color: var(--c-text); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .indicadores-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .tab-panel { padding: 1rem .75rem; }
+}

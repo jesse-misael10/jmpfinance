@@ -1,0 +1,133 @@
+/* ============================================================
+   TEMPLATE — template-style.css
+   Estilos específicos do template / ponto de partida para
+   novos projetos. tokens.css deve ser carregado antes.
+   ============================================================ */
+
+/* ============================================================
+   LAYOUT GERAL
+   ============================================================ */
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-panel {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem;
+}
+.tab-panel.active { display: flex; }
+
+/* ============================================================
+   TABELA DE DADOS
+   ============================================================ */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--c-border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.data-table thead th {
+  background: var(--c-navy);
+  color: #fff;
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.data-table tbody tr:hover td { background: var(--c-bg); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+
+.td-main  { font-weight: 600; color: #1e293b; }
+.td-muted { color: var(--c-muted); font-size: .78rem; font-variant-numeric: tabular-nums; }
+.td-num   { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.td-actions { display: flex; gap: 4px; align-items: center; }
+
+.row-total td {
+  background: var(--c-bg);
+  border-top: 2px solid var(--c-border-md);
+  font-size: .82rem;
+}
+
+/* ============================================================
+   KPI CARDS — variações de cor
+   ============================================================ */
+.kpi-card.kpi-blue  { border-left: 3px solid var(--c-blue); }
+.kpi-card.kpi-green { border-left: 3px solid var(--c-green); }
+.kpi-card.kpi-red   { border-left: 3px solid var(--c-red); }
+.kpi-card.kpi-amber { border-left: 3px solid var(--c-amber); }
+
+/* ============================================================
+   IMPORT CARD
+   ============================================================ */
+.import-card {
+  background: var(--c-surface);
+  border: 2px dashed var(--c-border-md);
+  border-radius: var(--radius);
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
+  margin-top: 1.25rem;
+  transition: border-color .15s, background .15s;
+}
+.import-card:hover { border-color: var(--c-blue); background: var(--c-blue-lt); }
+
+.import-icon  { font-size: 2rem; }
+.import-title { font-size: .9rem; font-weight: 700; color: var(--c-navy); }
+.import-sub   { font-size: .78rem; color: var(--c-muted); }
+
+/* ============================================================
+   MODAL: header row (título + fechar)
+   ============================================================ */
+.modal-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .25rem;
+}
+
+/* ============================================================
+   FORM ROW (2 colunas)
+   ============================================================ */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+}
+
+/* ============================================================
+   CONFIG PANEL
+   ============================================================ */
+.config-panel {
+  max-width: 640px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 600px) {
+  .tab-panel { padding: 1rem; }
+  .form-row  { grid-template-columns: 1fr; }
+}

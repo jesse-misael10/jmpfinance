@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cartão de Crédito — JMP Finance</title>
+  <link rel="stylesheet" href="../_shared/tokens.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header class="app-header">
+  <div class="header-left">
+    <span class="brand-badge">CC</span>
+    <div class="header-titles">
+      <span class="header-main-title">Cartão de Crédito</span>
+      <span class="header-subtitle">JMP Finance</span>
+    </div>
+  </div>
+
+  <nav class="tab-nav" id="tab-nav">
+    <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="tab-btn" data-tab="faturas">📄 Faturas</button>
+    <button class="tab-btn" data-tab="lancamentos">📋 Lançamentos</button>
+    <button class="tab-btn" data-tab="cartoes">💳 Cartões</button>
+  </nav>
+
+  <div class="header-right">
+    <button class="btn btn-primary btn-sm" id="btn-importar">⬆ Importar Fatura PDF</button>
+    <input type="file" id="file-input" accept="application/pdf" style="display:none;" multiple />
+  </div>
+</header>
+
+<!-- ===================== MAIN ===================== -->
+<main class="app-main">
+
+  <!-- ── TAB: DASHBOARD ── -->
+  <section class="tab-panel active" id="tab-dashboard">
+
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Período</label>
+        <select class="select-input" id="dash-periodo">
+          <option value="mes">Este mês</option>
+          <option value="3m">Últimos 3 meses</option>
+          <option value="6m">Últimos 6 meses</option>
+          <option value="ano">Este ano</option>
+          <option value="tudo">Tudo</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Cartão</label>
+        <select class="select-input" id="dash-cartao">
+          <option value="">Todos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="kpi-grid" id="dash-kpis">
+      <div class="kpi-card kpi-red">
+        <div class="kpi-label">Total do Período</div>
+        <div class="kpi-value" id="kpi-total">R$ 0,00</div>
+        <div class="kpi-sub" id="kpi-total-sub">— lançamentos</div>
+      </div>
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-label">Maior Gasto</div>
+        <div class="kpi-value" id="kpi-maior">R$ 0,00</div>
+        <div class="kpi-sub" id="kpi-maior-sub">—</div>
+      </div>
+      <div class="kpi-card kpi-amber">
+        <div class="kpi-label">Parcelamentos</div>
+        <div class="kpi-value" id="kpi-parc">R$ 0,00</div>
+        <div class="kpi-sub" id="kpi-parc-sub">— parcelas ativas</div>
+      </div>
+      <div class="kpi-card kpi-green">
+        <div class="kpi-label">Faturas Importadas</div>
+        <div class="kpi-value" id="kpi-faturas">0</div>
+        <div class="kpi-sub" id="kpi-faturas-sub">— cartões</div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <!-- Gastos por categoria -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Gastos por Categoria</span>
+        </div>
+        <div class="cat-list" id="cat-list">
+          <div class="empty-state">Nenhum dado no período</div>
+        </div>
+      </div>
+
+      <!-- Últimos lançamentos -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Últimos Lançamentos</span>
+          <button class="btn btn-ghost btn-sm" data-tab-goto="lancamentos">Ver todos →</button>
+        </div>
+        <div class="table-wrapper" style="border:none;border-radius:0;box-shadow:none;">
+          <table class="data-table" id="dash-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Cartão</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody id="dash-tbody">
+              <tr><td colspan="4" class="empty-cell">Nenhum lançamento</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── TAB: FATURAS ── -->
+  <section class="tab-panel" id="tab-faturas">
+
+    <div class="filter-bar">
+      <div class="filter-group" style="margin-left:auto;">
+        <button class="btn btn-primary btn-sm" id="btn-importar-fat">⬆ Importar PDF</button>
+      </div>
+    </div>
+
+    <div id="faturas-list" class="faturas-list">
+      <div class="empty-state" id="faturas-empty">
+        <span style="font-size:2.5rem;">📄</span>
+        <p>Nenhuma fatura importada</p>
+        <p style="font-size:.78rem;color:#94a3b8;">Clique em "Importar PDF" para começar</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── TAB: LANÇAMENTOS ── -->
+  <section class="tab-panel" id="tab-lancamentos">
+
+    <div class="filter-bar">
+      <div class="filter-group filter-group-search">
+        <label>Buscar</label>
+        <input type="text" class="form-control" id="lanc-search" placeholder="Descrição…" style="max-width:240px;" />
+      </div>
+      <div class="filter-group">
+        <label>Cartão</label>
+        <select class="select-input" id="lanc-cartao">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Categoria</label>
+        <select class="select-input" id="lanc-cat">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Mês/Ano</label>
+        <input type="month" class="form-control" id="lanc-mes" style="max-width:140px;" />
+      </div>
+      <div class="filter-group" style="margin-left:auto;">
+        <button class="btn btn-outline btn-sm" id="btn-export-csv">⬇ CSV</button>
+      </div>
+    </div>
+
+    <div class="section-card" style="flex:1;">
+      <div class="table-wrapper" style="border:none;border-radius:0;box-shadow:none;flex:1;">
+        <table class="data-table" id="lanc-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Descrição</th>
+              <th>Cartão</th>
+              <th>Banco</th>
+              <th>Categoria</th>
+              <th>Parcela</th>
+              <th class="th-num">Valor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="lanc-tbody">
+            <tr><td colspan="8" class="empty-cell">Nenhum lançamento</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer" id="lanc-footer"></div>
+    </div>
+
+  </section>
+
+  <!-- ── TAB: CARTÕES ── -->
+  <section class="tab-panel" id="tab-cartoes">
+
+    <div class="filter-bar">
+      <div class="filter-group" style="margin-left:auto;">
+        <button class="btn btn-primary btn-sm" id="btn-add-cartao">+ Novo Cartão</button>
+      </div>
+    </div>
+
+    <div id="cartoes-grid" class="cartoes-grid">
+      <div class="empty-state" id="cartoes-empty">
+        <span style="font-size:2.5rem;">💳</span>
+        <p>Nenhum cartão cadastrado</p>
+        <p style="font-size:.78rem;color:#94a3b8;">Cartões são criados automaticamente ao importar faturas</p>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- ===================== TOAST ===================== -->
+<div id="toast" class="toast" style="display:none;"></div>
+
+<!-- ===================== MODAL: IMPORTAR ===================== -->
+<div class="modal-overlay" id="modal-import" style="display:none;">
+  <div class="modal-box modal-import-box">
+    <div class="modal-header-row">
+      <span class="modal-title" id="import-title">Importar Fatura PDF</span>
+      <button class="modal-close" id="import-close">&times;</button>
+    </div>
+
+    <div id="import-drop-area" class="import-drop-area">
+      <div class="import-icon">📥</div>
+      <div class="import-title-text">Arraste os PDFs aqui ou clique para selecionar</div>
+      <div class="import-sub">Mercado Pago · Inter · Santander Empresas · Santander Unique</div>
+      <button class="btn btn-outline btn-sm" id="import-select-btn">Selecionar arquivos</button>
+      <input type="file" id="import-file-input" accept="application/pdf" multiple style="display:none;" />
+    </div>
+
+    <div id="import-progress" style="display:none;">
+      <div class="import-file-list" id="import-file-list"></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" id="import-cancel">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="import-confirm" style="display:none;">Confirmar Importação</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: FATURA DETALHE ===================== -->
+<div class="modal-overlay" id="modal-fatura" style="display:none;">
+  <div class="modal-box modal-fatura-box">
+    <div class="modal-header-row">
+      <span class="modal-title" id="fatura-modal-title">Fatura</span>
+      <button class="modal-close" id="fatura-close">&times;</button>
+    </div>
+    <div class="fatura-modal-info" id="fatura-modal-info"></div>
+    <div class="table-wrapper" style="border:none;border-radius:0;box-shadow:none;max-height:400px;overflow-y:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            <th>Categoria</th>
+            <th>Parcela</th>
+            <th class="th-num">Valor</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="fatura-modal-tbody"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="fatura-delete">🗑 Excluir Fatura</button>
+      <button class="btn btn-ghost btn-sm" id="fatura-modal-close">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: LANÇAMENTO EDITAR ===================== -->
+<div class="modal-overlay" id="modal-lanc" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-header-row">
+      <span class="modal-title">Editar Lançamento</span>
+      <button class="modal-close" id="lanc-close">&times;</button>
+    </div>
+    <div class="form-group" style="margin-top:.75rem;">
+      <label class="form-label">Descrição</label>
+      <input type="text" class="form-control" id="lanc-edit-desc" />
+    </div>
+    <div class="form-row" style="margin-top:.75rem;">
+      <div class="form-group">
+        <label class="form-label">Categoria</label>
+        <select class="select-input select-full" id="lanc-edit-cat"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Valor (R$)</label>
+        <input type="number" class="form-control" id="lanc-edit-valor" step="0.01" />
+      </div>
+    </div>
+    <div class="form-error" id="lanc-edit-error" style="display:none;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" id="lanc-edit-cancel">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="lanc-edit-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CONFIRMAR ===================== -->
+<div class="modal-overlay" id="modal-confirm" style="display:none;">
+  <div class="modal-box" style="max-width:380px;">
+    <span class="modal-title" id="confirm-title">Confirmar</span>
+    <p class="modal-body" id="confirm-body" style="margin:.75rem 0;"></p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="confirm-ok">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CARTÃO ===================== -->
+<div class="modal-overlay" id="modal-cartao" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-header-row">
+      <span class="modal-title" id="cartao-modal-title">Novo Cartão</span>
+      <button class="modal-close" id="cartao-close">&times;</button>
+    </div>
+    <div class="form-group" style="margin-top:.75rem;">
+      <label class="form-label">Nome / Apelido <span class="req">*</span></label>
+      <input type="text" class="form-control" id="cartao-nome" placeholder="Ex: Nubank Pessoal" />
+    </div>
+    <div class="form-row" style="margin-top:.75rem;">
+      <div class="form-group">
+        <label class="form-label">Banco</label>
+        <select class="select-input select-full" id="cartao-banco">
+          <option value="">— outro —</option>
+          <option value="mercado_pago">Mercado Pago</option>
+          <option value="inter">Inter</option>
+          <option value="santander_empresas">Santander Empresas</option>
+          <option value="santander_unique">Santander Unique</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Últimos 4 dígitos</label>
+        <input type="text" class="form-control" id="cartao-ultimos" maxlength="4" placeholder="0000" />
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:.75rem;">
+      <label class="form-label">Cor</label>
+      <div class="color-picker-row" id="cartao-cor-row"></div>
+    </div>
+    <div class="form-error" id="cartao-error" style="display:none;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" id="cartao-cancel">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="cartao-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Migração FEE</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <style>
+    body { font-family: monospace; padding: 2rem; background: #0f172a; color: #e2e8f0; }
+    h2 { color: #60a5fa; }
+    .log { margin: .5rem 0; padding: .4rem .8rem; border-radius: 4px; }
+    .ok  { background: #14532d; color: #86efac; }
+    .err { background: #7f1d1d; color: #fca5a5; }
+    .info{ background: #1e3a5f; color: #93c5fd; }
+    button { padding: .75rem 2rem; background: #2563eb; color: #fff; border: none;
+             border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 1rem; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    #source { display: none; }
+  </style>
+</head>
+<body>
+<h2>🔄 Migração de Dados — FEE</h2>
+<p style="color:#94a3b8;">Esta página lê os dados do localStorage (Safari) e envia para o Supabase.</p>
+<p style="color:#fbbf24;">⚠ Abra esta página via <strong>file://</strong> no Safari (não pelo servidor local)</p>
+
+<div id="log"></div>
+<button id="btn" onclick="migrar()">Iniciar Migração</button>
+
+<script>
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+function log(msg, tipo = 'info') {
+  const el = document.createElement('div');
+  el.className = 'log ' + tipo;
+  el.textContent = msg;
+  document.getElementById('log').appendChild(el);
+}
+
+async function migrar() {
+  document.getElementById('btn').disabled = true;
+
+  // 1. Verificar login
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) {
+    log('❌ Não está logado. Faça login primeiro em http://localhost:8080/Novoprojeto/login.html', 'err');
+    document.getElementById('btn').disabled = false;
+    return;
+  }
+  const userId = session.user.id;
+  log('✔ Logado como: ' + session.user.email, 'ok');
+
+  // 2. Ler dados do localStorage
+  const keys = ['fee_bus_v1','fee_lancamentos_v1','fee_notas_v1','fee_config_v1'];
+  let found = 0;
+  for (const key of keys) {
+    const raw = localStorage.getItem(key);
+    if (!raw) { log('⚠ Sem dados para: ' + key, 'info'); continue; }
+
+    let value;
+    try { value = JSON.parse(raw); } catch { log('❌ Erro ao parsear: ' + key, 'err'); continue; }
+
+    log('📦 Enviando ' + key + '...', 'info');
+
+    const { error } = await db.from('app_storage').upsert({
+      user_id:    userId,
+      app_name:   'fee',
+      key,
+      value,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id,app_name,key' });
+
+    if (error) {
+      log('❌ Erro ao salvar ' + key + ': ' + error.message, 'err');
+    } else {
+      const count = Array.isArray(value) ? value.length + ' registros' : 'ok';
+      log('✔ ' + key + ' salvo (' + count + ')', 'ok');
+      found++;
+    }
+  }
+
+  if (found === 0) {
+    log('⚠ Nenhum dado encontrado no localStorage. Certifique-se de abrir esta página no Safari via file://', 'err');
+  } else {
+    log('🎉 Migração concluída! Acesse http://localhost:8080/Novoprojeto/login.html no Chrome.', 'ok');
+  }
+
+  document.getElementById('btn').disabled = false;
+}
+</script>
+</body>
+</html>

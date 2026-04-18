@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PFL — JMP Finance</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-left">
+    <span class="brand-badge">PFL</span>
+    <div class="header-titles">
+      <span class="header-main-title" id="header-bu">PFL</span>
+      <span class="header-subtitle">JMP Finance</span>
+    </div>
+  </div>
+
+  <nav class="tab-nav" id="tab-nav">
+    <button class="tab-btn active" data-tab="pfl">📊 PFL</button>
+    <button class="tab-btn" data-tab="dre-mes">📋 DRE Mês a Mês</button>
+    <button class="tab-btn" data-tab="dre-acum">📈 DRE Acumulado</button>
+  </nav>
+
+  <div class="header-right">
+    <button class="btn btn-outline btn-sm" id="btn-clear" style="display:none;">🗑 Limpar</button>
+    <button class="btn btn-primary btn-sm" id="btn-import">⬆ Importar Relatório</button>
+    <input type="file" id="file-input" accept=".xlsx,.xls,.csv" style="display:none;" />
+  </div>
+</header>
+
+<main class="app-main">
+
+  <!-- ── PFL ── -->
+  <section class="tab-panel active" id="tab-pfl">
+    <div id="pfl-empty" class="full-empty">
+      <span style="font-size:3rem;">📊</span>
+      <p>Nenhum dado importado</p>
+      <p style="font-size:.8rem;color:#94a3b8;">Clique em "Importar Relatório" para carregar o Relatório de Controladoria</p>
+      <button class="btn btn-primary btn-sm" id="btn-import-empty">⬆ Importar Relatório</button>
+    </div>
+    <div id="pfl-content" style="display:none;">
+
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Mês de referência</label>
+          <select class="select-input" id="pfl-mes"></select>
+        </div>
+        <div class="filter-group" style="margin-left:auto;">
+          <span class="data-info" id="pfl-info"></span>
+        </div>
+      </div>
+
+      <!-- KPI Resumo DRE -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Resumo DRE</span>
+          <span style="font-size:.75rem;color:var(--c-muted);" id="pfl-periodo-label"></span>
+        </div>
+        <div class="kpi-resumo" id="kpi-resumo"></div>
+      </div>
+
+      <!-- Indicadores -->
+      <div class="indicadores-grid">
+        <div class="section-card">
+          <div class="section-header"><span class="section-title">Índices de Lucratividade</span></div>
+          <div class="indic-list" id="indic-lucrat"></div>
+        </div>
+        <div class="section-card">
+          <div class="section-header"><span class="section-title">Índices de Liquidez</span></div>
+          <div class="indic-list" id="indic-liquid"></div>
+        </div>
+        <div class="section-card">
+          <div class="section-header"><span class="section-title">Índices de Endividamento</span></div>
+          <div class="indic-list" id="indic-endiv"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── DRE MÊS A MÊS ── -->
+  <section class="tab-panel" id="tab-dre-mes">
+    <div id="dre-mes-empty" class="full-empty">
+      <span style="font-size:3rem;">📋</span>
+      <p>Nenhum dado importado</p>
+    </div>
+    <div id="dre-mes-content" style="display:none;flex:1;flex-direction:column;">
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Ano</label>
+          <select class="select-input" id="dre-mes-ano"></select>
+        </div>
+        <div class="filter-group">
+          <label>Visibilidade</label>
+          <div class="toggle-group">
+            <button class="toggle-btn active" data-vis="resumido">Resumido</button>
+            <button class="toggle-btn" data-vis="detalhado">Detalhado</button>
+          </div>
+        </div>
+      </div>
+      <div class="dre-wrapper">
+        <table class="dre-table" id="dre-mes-table"></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DRE ACUMULADO ── -->
+  <section class="tab-panel" id="tab-dre-acum">
+    <div id="dre-acum-empty" class="full-empty">
+      <span style="font-size:3rem;">📈</span>
+      <p>Nenhum dado importado</p>
+    </div>
+    <div id="dre-acum-content" style="display:none;flex:1;flex-direction:column;">
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Ano</label>
+          <select class="select-input" id="dre-acum-ano"></select>
+        </div>
+        <div class="filter-group">
+          <label>Visibilidade</label>
+          <div class="toggle-group">
+            <button class="toggle-btn active" data-vis="resumido">Resumido</button>
+            <button class="toggle-btn" data-vis="detalhado">Detalhado</button>
+          </div>
+        </div>
+      </div>
+      <div class="dre-wrapper">
+        <table class="dre-table" id="dre-acum-table"></table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast" style="display:none;"></div>
+
+<!-- Modal de importação -->
+<div class="modal-overlay" id="modal-import" style="display:none;">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header-row">
+      <span class="modal-title">Importar Relatório de Controladoria</span>
+      <button class="modal-close" id="import-close">&times;</button>
+    </div>
+    <div class="import-drop-area" id="import-drop">
+      <div style="font-size:2rem;">📥</div>
+      <div style="font-weight:700;color:var(--c-navy);">Arraste o arquivo aqui</div>
+      <div style="font-size:.78rem;color:var(--c-muted);">Relatório de Controladoria DaaS (.xlsx)</div>
+      <button class="btn btn-outline btn-sm" id="import-select">Selecionar arquivo</button>
+      <input type="file" id="import-file" accept=".xlsx,.xls,.csv" style="display:none;" />
+    </div>
+    <div id="import-status" style="display:none;padding:.75rem;background:var(--c-bg);border-radius:var(--radius);font-size:.82rem;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" id="import-cancel">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="import-confirm" style="display:none;">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

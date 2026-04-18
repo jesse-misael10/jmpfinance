@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preview</title>
+  <style>
+    body { display: flex; flex-direction: column; }
+    .app-main { flex: 1; padding: 1.25rem 1.5rem; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    .data-table th, .data-table td { padding: 9px 14px; border-bottom: 1px solid var(--c-border); text-align: left; }
+    .data-table thead th { background: var(--c-navy); color: #fff; font-size: .74rem; font-weight: 700; letter-spacing: .04em; }
+    .data-table tbody tr:hover td { background: var(--c-bg); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .td-main  { font-weight: 600; }
+    .td-muted { color: var(--c-muted); font-size: .78rem; }
+    .td-num   { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .td-actions { display: flex; gap: 4px; }
+    .row-total td { background: var(--c-bg); border-top: 2px solid var(--c-border-md); }
+    .kpi-card.kpi-blue  { border-left: 3px solid var(--c-blue); }
+    .kpi-card.kpi-green { border-left: 3px solid var(--c-green); }
+    .kpi-card.kpi-red   { border-left: 3px solid var(--c-red); }
+    .import-card { background: var(--c-surface); border: 2px dashed var(--c-border-md); border-radius: var(--radius); padding: 1.5rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: .6rem; margin-top: 1rem; }
+    .import-icon  { font-size: 2rem; }
+    .import-title { font-size: .9rem; font-weight: 700; color: var(--c-navy); }
+    .import-sub   { font-size: .78rem; color: var(--c-muted); }
+    .modal-header-row { display: flex; align-items: center; justify-content: space-between; }
+    .config-panel { max-width: 560px; }
+    .preview-tag {
+      display: inline-block;
+      background: rgba(37,99,235,.1);
+      color: var(--c-blue);
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      letter-spacing: .05em;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-left">
+    <span class="brand-badge">ABC</span>
+    <div class="header-titles">
+      <span class="header-main-title">Nome do Projeto <span class="preview-tag">PREVIEW</span></span>
+      <span class="header-subtitle">JMP Finance</span>
+    </div>
+  </div>
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="tab-btn" data-tab="dados">📋 Dados</button>
+    <button class="tab-btn" data-tab="modal">🪟 Modal</button>
+    <button class="tab-btn" data-tab="config">⚙️ Config</button>
+  </nav>
+  <div class="header-right">
+    <button class="btn btn-primary btn-sm">+ Nova Ação</button>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <!-- DASHBOARD -->
+  <div class="tab-panel active" id="tab-dashboard">
+
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Período</label>
+        <select class="select-input">
+          <option>Este mês</option>
+          <option>Este ano</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Visualização</label>
+        <div class="toggle-group">
+          <button class="toggle-btn active">Mensal</button>
+          <button class="toggle-btn">Trimestral</button>
+          <button class="toggle-btn">Anual</button>
+        </div>
+      </div>
+      <div class="filter-group" style="margin-left:auto;">
+        <button class="btn btn-outline btn-sm">⬇ Exportar</button>
+      </div>
+    </div>
+
+    <div class="kpi-grid" style="margin-top:1.25rem;">
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-label">Saldo Atual</div>
+        <div class="kpi-value">R$ 128.400</div>
+        <div class="kpi-sub">↑ 12% vs mês anterior</div>
+      </div>
+      <div class="kpi-card kpi-green">
+        <div class="kpi-label">Entradas</div>
+        <div class="kpi-value val-pos">R$ 200.000</div>
+        <div class="kpi-sub">Realizado + Projetado</div>
+      </div>
+      <div class="kpi-card kpi-red">
+        <div class="kpi-label">Saídas</div>
+        <div class="kpi-value val-neg">R$ 71.600</div>
+        <div class="kpi-sub">Realizado + Projetado</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Saldo Projetado</div>
+        <div class="kpi-value">R$ 128.400</div>
+        <div class="kpi-sub">Fim do período</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">Registros do Período</span>
+        <span style="font-size:.75rem;color:var(--c-muted);">Últimos 10 registros</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Descrição</th>
+              <th>Categoria</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-muted">01/04/2026</td>
+              <td class="td-main">Recebimento de cliente</td>
+              <td>Operacional</td>
+              <td class="val-pos td-num">R$ 50.000</td>
+              <td><span class="badge badge-green">● Realizado</span></td>
+              <td class="td-actions"><button class="btn-icon">✏</button><button class="btn-icon btn-delete">✕</button></td>
+            </tr>
+            <tr>
+              <td class="td-muted">05/04/2026</td>
+              <td class="td-main">Folha de pagamento</td>
+              <td>Pessoal</td>
+              <td class="val-neg td-num">(R$ 30.000)</td>
+              <td><span class="badge badge-amber">◎ Projetado</span></td>
+              <td class="td-actions"><button class="btn-icon">✏</button><button class="btn-icon btn-delete">✕</button></td>
+            </tr>
+            <tr>
+              <td class="td-muted">10/04/2026</td>
+              <td class="td-main">Aluguel do escritório</td>
+              <td>Estrutura</td>
+              <td class="val-neg td-num">(R$ 8.500)</td>
+              <td><span class="badge badge-green">● Realizado</span></td>
+              <td class="td-actions"><button class="btn-icon">✏</button><button class="btn-icon btn-delete">✕</button></td>
+            </tr>
+            <tr class="row-total">
+              <td colspan="3"><strong>Total</strong></td>
+              <td class="val-pos td-num"><strong>R$ 11.500</strong></td>
+              <td colspan="2"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Botões -->
+    <div class="section-card">
+      <div class="section-header"><span class="section-title">Botões</span></div>
+      <div style="padding:1rem 1.25rem;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-primary">Primário</button>
+        <button class="btn btn-outline">Outline</button>
+        <button class="btn btn-ghost">Ghost</button>
+        <button class="btn btn-danger">Danger</button>
+        <button class="btn btn-primary btn-sm">Primário SM</button>
+        <button class="btn btn-outline btn-sm">Outline SM</button>
+        <button class="btn-icon">✏</button>
+        <button class="btn-icon btn-delete">✕</button>
+      </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="section-card">
+      <div class="section-header"><span class="section-title">Badges & Status</span></div>
+      <div style="padding:1rem 1.25rem;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;">
+        <span class="badge badge-green">● Realizado</span>
+        <span class="badge badge-amber">◎ Projetado</span>
+        <span class="badge badge-red">✕ Cancelado</span>
+        <span class="badge badge-blue">◈ Ativo</span>
+        <span style="color:var(--c-green);font-weight:700;font-size:.85rem;">R$ +50.000</span>
+        <span style="color:var(--c-red);font-weight:700;font-size:.85rem;">(R$ 30.000)</span>
+        <span style="color:var(--c-muted);font-size:.85rem;">—</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DADOS -->
+  <div class="tab-panel" id="tab-dados">
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Buscar</label>
+        <input type="text" class="form-control" placeholder="Descrição…" style="max-width:220px;" />
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <select class="select-input">
+          <option>Todos</option>
+          <option>Realizado</option>
+          <option>Projetado</option>
+        </select>
+      </div>
+      <div class="filter-group" style="margin-left:auto;">
+        <button class="btn btn-primary btn-sm">+ Novo</button>
+        <button class="btn btn-outline btn-sm">⬇ CSV</button>
+      </div>
+    </div>
+    <div class="section-card" style="margin-top:1.25rem;">
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody>
+            <tr><td class="td-muted">01/04/2026</td><td class="td-main">Recebimento</td><td>Operacional</td><td class="val-pos td-num">R$ 50.000</td><td><span class="badge badge-green">● Realizado</span></td><td class="td-actions"><button class="btn-icon">✏</button><button class="btn-icon btn-delete">✕</button></td></tr>
+            <tr><td class="td-muted">05/04/2026</td><td class="td-main">Folha</td><td>Pessoal</td><td class="val-neg td-num">(R$ 30.000)</td><td><span class="badge badge-amber">◎ Projetado</span></td><td class="td-actions"><button class="btn-icon">✏</button><button class="btn-icon btn-delete">✕</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="import-card">
+      <div class="import-icon">📥</div>
+      <div class="import-title">Importar Excel</div>
+      <div class="import-sub">Colunas esperadas: <strong>DATA · DESCRICAO · VALOR · STATUS</strong></div>
+      <button class="btn btn-outline btn-sm">Selecionar arquivo .xlsx</button>
+    </div>
+  </div>
+
+  <!-- MODAL (inline para preview) -->
+  <div class="tab-panel" id="tab-modal">
+    <div style="padding:1rem 0;display:flex;gap:1rem;flex-wrap:wrap;">
+
+      <!-- Formulário -->
+      <div class="modal-box" style="position:relative;max-width:420px;flex:1 1 380px;">
+        <div class="modal-header-row">
+          <span class="modal-title">Novo Registro</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="form-row" style="margin-top:.75rem;">
+          <div class="form-group">
+            <label class="form-label">Data <span class="req">*</span></label>
+            <input type="date" class="form-control" value="2026-04-01" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="select-input select-full">
+              <option>Realizado</option>
+              <option>Projetado</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:.75rem;">
+          <label class="form-label">Descrição <span class="req">*</span></label>
+          <input type="text" class="form-control" placeholder="Ex: Pagamento de fornecedor" />
+        </div>
+        <div class="form-group" style="margin-top:.75rem;">
+          <label class="form-label">Valor (R$) <span class="req">*</span></label>
+          <input type="number" class="form-control" placeholder="0,00" />
+          <span class="form-hint">Positivo = entrada · Negativo = saída</span>
+        </div>
+        <div class="form-error" style="margin-top:.5rem;">Preencha todos os campos obrigatórios.</div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost btn-sm">Cancelar</button>
+          <button class="btn btn-primary btn-sm">Salvar</button>
+        </div>
+      </div>
+
+      <!-- Confirmação -->
+      <div class="modal-box" style="max-width:340px;flex:0 1 320px;align-self:flex-start;">
+        <span class="modal-title">Confirmar exclusão</span>
+        <p class="modal-body">Deseja excluir este registro? Esta ação não pode ser desfeita.</p>
+        <div class="modal-footer">
+          <button class="btn btn-ghost btn-sm">Cancelar</button>
+          <button class="btn btn-danger btn-sm">Excluir</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Empty state -->
+    <div class="section-card" style="margin-top:1rem;">
+      <div class="empty-state">
+        <span style="font-size:2.5rem;">📋</span>
+        <p style="font-weight:600;color:#334155;">Nenhum registro encontrado</p>
+        <p>Clique em <strong>+ Novo</strong> para adicionar</p>
+        <button class="btn btn-primary btn-sm" style="margin-top:.5rem;">+ Novo Registro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="tab-panel" id="tab-config">
+    <div class="config-panel" style="margin-top:1.25rem;">
+      <div class="section-card">
+        <div class="section-header"><span class="section-title">Geral</span></div>
+        <div style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;">
+          <div class="form-group">
+            <label class="form-label">Nome da Empresa</label>
+            <input type="text" class="form-control" value="Unique" style="max-width:320px;" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ano de Referência</label>
+            <select class="select-input" style="max-width:140px;"><option>2026</option></select>
+          </div>
+          <div><button class="btn btn-primary btn-sm">Salvar</button></div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-header"><span class="section-title">Dados</span></div>
+        <div style="padding:1.25rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm">⬇ Exportar JSON</button>
+          <button class="btn btn-outline btn-sm">⬆ Importar JSON</button>
+          <button class="btn btn-danger btn-sm">🗑 Limpar Dados</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // Tab switching
+  document.querySelector('.tab-nav').addEventListener('click', e => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.tab-panel').forEach(p =>
+      p.classList.toggle('active', p.id === 'tab-' + btn.dataset.tab));
+  });
+
+  // Toggle buttons
+  document.querySelectorAll('.toggle-group').forEach(group => {
+    group.addEventListener('click', e => {
+      const btn = e.target.closest('.toggle-btn');
+      if (!btn) return;
+      group.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Receive CSS from editor
+  window.addEventListener('message', e => {
+    if (e.data && e.data.type === 'APPLY_CSS') {
+      let styleEl = document.getElementById('live-tokens');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'live-tokens';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = e.data.css;
+    }
+  });
+</script>
+</body>
+</html>

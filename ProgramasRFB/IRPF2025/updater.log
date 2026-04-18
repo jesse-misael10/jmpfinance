@@ -1,0 +1,114 @@
+mar 18, 2025 8:21:14 PM serpro.ppgd.irpf.util.update.IRPFUpdater download
+INFORMAÇÕES: Iniciando download de arquivos internos: [MSGS, LINKS, BANCO, BBENS, NATOC, DIVID, PAIS].
+mar 18, 2025 8:21:14 PM br.gov.serpro.updater.PgdUpdater executarDownload
+INFORMAÇÕES: Iniciando download dos pacotes de instalação: '[Ljava.lang.String;@7bc65dea'.
+mar 18, 2025 8:21:14 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Downloading
+mar 18, 2025 8:21:14 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:DownloadCompleted
+mar 18, 2025 8:21:14 PM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando decompactação dos arquivos do pacote na pasta temporária: '/Users/jessemisaeldepaula/.irpf/tmp_IRPF2025'.
+mar 18, 2025 8:21:14 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+mar 18, 2025 8:21:14 PM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando a atualização dos arquivos.
+mar 18, 2025 8:21:14 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+mar 18, 2025 8:21:14 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:UpdateCompleted
+mar 18, 2025 8:21:14 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:NotStarted
+mar 26, 2025 11:30:35 AM serpro.ppgd.irpf.util.update.IRPFUpdater download
+INFORMAÇÕES: Iniciando download da versão: 1.1 (Opcional). Versão Atual: 1.0.
+mar 26, 2025 11:30:35 AM br.gov.serpro.updater.PgdUpdater executarDownload
+INFORMAÇÕES: Iniciando download dos pacotes de instalação: '[Ljava.lang.String;@aec3662'.
+mar 26, 2025 11:30:35 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Downloading
+mar 26, 2025 11:30:36 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:DownloadCompleted
+mar 26, 2025 11:30:44 AM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando decompactação dos arquivos do pacote na pasta temporária: '/Users/jessemisaeldepaula/.irpf/tmp_IRPF2025'.
+mar 26, 2025 11:30:44 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+mar 26, 2025 11:30:45 AM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando a atualização dos arquivos.
+mar 26, 2025 11:30:45 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+mar 26, 2025 11:30:45 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:UpdateCompleted
+abr 15, 2025 11:15:06 AM serpro.ppgd.irpf.util.update.IRPFUpdater download
+INFORMAÇÕES: Iniciando download da versão: 1.2 (Opcional). Versão Atual: 1.1.
+abr 15, 2025 11:15:06 AM br.gov.serpro.updater.PgdUpdater executarDownload
+INFORMAÇÕES: Iniciando download dos pacotes de instalação: '[Ljava.lang.String;@36525ed9'.
+abr 15, 2025 11:15:06 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Downloading
+abr 15, 2025 11:15:08 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:DownloadCompleted
+abr 15, 2025 11:15:12 AM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando decompactação dos arquivos do pacote na pasta temporária: '/Users/jessemisaeldepaula/.irpf/tmp_IRPF2025'.
+abr 15, 2025 11:15:12 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+abr 15, 2025 11:15:12 AM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando a atualização dos arquivos.
+abr 15, 2025 11:15:12 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+abr 15, 2025 11:15:13 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:UpdateCompleted
+abr 15, 2025 11:15:21 AM serpro.ppgd.irpf.util.update.IRPFUpdater download
+INFORMAÇÕES: Iniciando download de arquivos internos: [MSGS].
+abr 15, 2025 11:15:21 AM br.gov.serpro.updater.PgdUpdater executarDownload
+INFORMAÇÕES: Iniciando download dos pacotes de instalação: '[Ljava.lang.String;@21c25f3'.
+abr 15, 2025 11:15:21 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Downloading
+abr 15, 2025 11:15:21 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:DownloadCompleted
+abr 15, 2025 11:15:21 AM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando decompactação dos arquivos do pacote na pasta temporária: '/Users/jessemisaeldepaula/.irpf/tmp_IRPF2025'.
+abr 15, 2025 11:15:21 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+abr 15, 2025 11:15:21 AM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando a atualização dos arquivos.
+abr 15, 2025 11:15:21 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+abr 15, 2025 11:15:21 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:UpdateCompleted
+abr 15, 2025 11:15:21 AM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:NotStarted
+mai 30, 2025 8:50:10 PM serpro.ppgd.irpf.util.update.IRPFUpdater download
+INFORMAÇÕES: Iniciando download da versão: 1.3 (Opcional). Versão Atual: 1.2.
+mai 30, 2025 8:50:10 PM br.gov.serpro.updater.PgdUpdater executarDownload
+INFORMAÇÕES: Iniciando download dos pacotes de instalação: '[Ljava.lang.String;@7875ffa6'.
+mai 30, 2025 8:50:10 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Downloading
+mai 30, 2025 8:50:11 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:DownloadCompleted
+mai 30, 2025 8:50:16 PM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando decompactação dos arquivos do pacote na pasta temporária: '/Users/jessemisaeldepaula/.irpf/tmp_IRPF2025'.
+mai 30, 2025 8:50:17 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+mai 30, 2025 8:50:17 PM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando a atualização dos arquivos.
+mai 30, 2025 8:50:17 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+mai 30, 2025 8:50:17 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:UpdateCompleted
+mai 30, 2025 8:50:25 PM serpro.ppgd.irpf.util.update.IRPFUpdater download
+INFORMAÇÕES: Iniciando download de arquivos internos: [MSGS, LINKS, PAIS].
+mai 30, 2025 8:50:25 PM br.gov.serpro.updater.PgdUpdater executarDownload
+INFORMAÇÕES: Iniciando download dos pacotes de instalação: '[Ljava.lang.String;@602eca40'.
+mai 30, 2025 8:50:25 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Downloading
+mai 30, 2025 8:50:25 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:DownloadCompleted
+mai 30, 2025 8:50:25 PM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando decompactação dos arquivos do pacote na pasta temporária: '/Users/jessemisaeldepaula/.irpf/tmp_IRPF2025'.
+mai 30, 2025 8:50:25 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+mai 30, 2025 8:50:25 PM br.gov.serpro.updater.PgdUpdater updateFiles
+INFORMAÇÕES: Iniciando a atualização dos arquivos.
+mai 30, 2025 8:50:25 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:Updtating
+mai 30, 2025 8:50:25 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:UpdateCompleted
+mai 30, 2025 8:50:25 PM br.gov.serpro.updater.PgdUpdater registerUpdateStatus
+INFORMAÇÕES: Registrando estado atual:NotStarted

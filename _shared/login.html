@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — JMP Finance</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f1f5f9;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-wrap {
+      width: 100%;
+      max-width: 400px;
+      padding: 1.5rem;
+    }
+
+    .login-brand {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .login-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: #0f2044;
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.1rem;
+      border-radius: 12px;
+      letter-spacing: .05em;
+      margin-bottom: .75rem;
+    }
+
+    .login-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #0f2044;
+    }
+
+    .login-sub {
+      font-size: .82rem;
+      color: #64748b;
+      margin-top: .25rem;
+    }
+
+    .login-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .form-input {
+      padding: .6rem .85rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 7px;
+      font-size: .9rem;
+      color: #1e293b;
+      outline: none;
+      transition: border-color .15s;
+      width: 100%;
+    }
+    .form-input:focus { border-color: #2563eb; }
+
+    .btn-login {
+      width: 100%;
+      padding: .7rem;
+      background: #0f2044;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+      margin-top: .5rem;
+    }
+    .btn-login:hover { background: #1e3a6e; }
+    .btn-login:disabled { opacity: .6; cursor: not-allowed; }
+
+    .error-msg {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      border-radius: 7px;
+      padding: .6rem .85rem;
+      font-size: .82rem;
+      margin-bottom: 1rem;
+    }
+
+    .forgot-link {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: .78rem;
+    }
+
+    .forgot-link a {
+      color: #2563eb;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .forgot-link a:hover { text-decoration: underline; }
+
+    /* Reset password view */
+    .reset-view { display: none; }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      font-size: .78rem;
+      color: #2563eb;
+      cursor: pointer;
+      margin-bottom: 1rem;
+      text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    .success-msg {
+      display: none;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #16a34a;
+      border-radius: 7px;
+      padding: .6rem .85rem;
+      font-size: .82rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-brand">
+    <div class="login-badge">JMP</div>
+    <div class="login-title">JMP Finance</div>
+    <div class="login-sub">Painel de Gestão</div>
+  </div>
+
+  <!-- ── View: Login ── -->
+  <div class="login-card" id="view-login">
+    <div class="error-msg" id="login-error"></div>
+    <div class="form-group">
+      <label class="form-label">E-mail</label>
+      <input type="email" class="form-input" id="login-email" placeholder="seu@email.com" autocomplete="email" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input type="password" class="form-input" id="login-senha" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="btn-login" id="btn-login">Entrar</button>
+    <div class="forgot-link">
+      <a id="link-forgot">Esqueci minha senha</a>
+    </div>
+  </div>
+
+  <!-- ── View: Reset ── -->
+  <div class="login-card reset-view" id="view-reset">
+    <a class="back-link" id="link-back">← Voltar ao login</a>
+    <div class="success-msg" id="reset-success"></div>
+    <div class="error-msg" id="reset-error"></div>
+    <p style="font-size:.82rem;color:#64748b;margin-bottom:1rem;">
+      Digite seu e-mail e enviaremos um link para redefinir sua senha.
+    </p>
+    <div class="form-group">
+      <label class="form-label">E-mail</label>
+      <input type="email" class="form-input" id="reset-email" placeholder="seu@email.com" />
+    </div>
+    <button class="btn-login" id="btn-reset">Enviar link</button>
+  </div>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // Destino após login
+  const params    = new URLSearchParams(window.location.search);
+  const returnTo  = params.get('return') || null;
+
+  // Se já está logado, redirecionar
+  db.auth.getSession().then(({ data: { session } }) => {
+    if (session) goToApp();
+  });
+
+  function goToApp() {
+    if (returnTo) {
+      window.location.href = decodeURIComponent(returnTo);
+    } else {
+      // Redirecionar para índice dos apps
+      window.location.href = '/index.html';
+    }
+  }
+
+  // ── Login ─────────────────────────────────────────────
+  const btnLogin   = document.getElementById('btn-login');
+  const loginError = document.getElementById('login-error');
+
+  async function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const senha = document.getElementById('login-senha').value;
+
+    if (!email || !senha) {
+      showError(loginError, 'Preencha e-mail e senha.');
+      return;
+    }
+
+    btnLogin.disabled = true;
+    btnLogin.textContent = 'Entrando…';
+    loginError.style.display = 'none';
+
+    const { error } = await db.auth.signInWithPassword({ email, password: senha });
+
+    if (error) {
+      btnLogin.disabled = false;
+      btnLogin.textContent = 'Entrar';
+      const msg = error.message.includes('Invalid') || error.message.includes('credentials')
+        ? 'E-mail ou senha incorretos.'
+        : error.message;
+      showError(loginError, msg);
+      return;
+    }
+
+    goToApp();
+  }
+
+  btnLogin.addEventListener('click', doLogin);
+  document.getElementById('login-senha').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  // ── Reset password ────────────────────────────────────
+  document.getElementById('link-forgot').addEventListener('click', () => {
+    document.getElementById('view-login').style.display = 'none';
+    document.getElementById('view-reset').style.display = 'block';
+    document.getElementById('reset-email').value =
+      document.getElementById('login-email').value;
+  });
+
+  document.getElementById('link-back').addEventListener('click', () => {
+    document.getElementById('view-login').style.display = 'block';
+    document.getElementById('view-reset').style.display = 'none';
+  });
+
+  document.getElementById('btn-reset').addEventListener('click', async () => {
+    const email = document.getElementById('reset-email').value.trim();
+    const errEl = document.getElementById('reset-error');
+    const okEl  = document.getElementById('reset-success');
+    errEl.style.display = 'none';
+    okEl.style.display  = 'none';
+
+    if (!email) { showError(errEl, 'Digite seu e-mail.'); return; }
+
+    const { error } = await db.auth.resetPasswordForEmail(email);
+    if (error) { showError(errEl, error.message); return; }
+
+    okEl.textContent = 'Link enviado! Verifique seu e-mail.';
+    okEl.style.display = 'block';
+  });
+
+  function showError(el, msg) {
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+</script>
+</body>
+</html>

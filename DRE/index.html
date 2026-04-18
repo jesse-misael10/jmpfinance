@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DRE — Demonstração do Resultado do Exercício</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="auth-dre.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="brand-badge">DRE</div>
+        <div>
+          <h1>Demonstração do Resultado do Exercício</h1>
+          <p id="headerSub">Relatório de Controladoria — carregue um arquivo para iniciar</p>
+        </div>
+      </div>
+      <div class="header-actions" id="headerActions" style="display:none">
+        <button class="btn-secondary" id="btnExportCSV">⬇ Exportar CSV</button>
+        <button class="btn-secondary" id="btnNewFile">↩ Novo Arquivo</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- UPLOAD SECTION -->
+    <section class="upload-section" id="uploadSection">
+      <div class="upload-card">
+        <div class="upload-icon">📊</div>
+        <h2>Carregar Relatório Excel</h2>
+        <p>Selecione o arquivo <strong>.xlsx</strong> exportado do sistema de controladoria</p>
+        <div class="upload-dropzone" id="dropZone">
+          <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+          <button class="btn-primary" id="btnSelectFile">Selecionar Arquivo</button>
+          <span class="upload-or">ou arraste o arquivo aqui</span>
+        </div>
+        <div id="uploadStatus" class="upload-status"></div>
+        <div class="upload-expected">
+          <strong>Colunas esperadas:</strong> FILIAL_NOME · DATA · CONTA · DESC_CONTA · BU · NATUREZA · VALOR_DEBITO · VALOR_CREDITO · SALDO
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD (oculto até carregar arquivo) -->
+    <div class="dashboard" id="dashboard" style="display:none">
+
+      <!-- TAB NAV (visível quando há dados de Ativo/Passivo) -->
+      <nav class="tab-nav" id="tabNav" style="display:none">
+        <button class="tab-btn active" data-tab="dre">📊 DRE</button>
+        <button class="tab-btn"        data-tab="bp" >📋 Balancete</button>
+      </nav>
+
+      <!-- FILTROS -->
+      <section class="filters-section">
+        <div class="filters-bar">
+          <div class="filter-group">
+            <label>Empresa / Filial</label>
+            <div class="ms-container" id="filterFilial"></div>
+          </div>
+          <div class="filter-group">
+            <label>Unidade de Negócio</label>
+            <div class="ms-container" id="filterBU"></div>
+          </div>
+          <div class="filter-group">
+            <label>Agrupamento</label>
+            <div class="toggle-group" id="viewToggle">
+              <button class="toggle-btn active" data-view="monthly">Mensal</button>
+              <button class="toggle-btn" data-view="quarterly">Trimestral</button>
+            </div>
+          </div>
+          <div class="filter-info" id="filterInfo"></div>
+        </div>
+      </section>
+
+      <!-- ── DRE ─────────────────────────────── -->
+      <div id="dreSection">
+
+      <!-- KPI CARDS -->
+      <section class="kpis-section">
+        <div class="kpis-grid">
+          <div class="kpi-card kpi-receita">
+            <div class="kpi-label">Receita Bruta</div>
+            <div class="kpi-value" id="kpiReceitaVal">—</div>
+            <div class="kpi-meta" id="kpiReceitaMeta">Total do período</div>
+          </div>
+          <div class="kpi-card kpi-lb">
+            <div class="kpi-label">Lucro Bruto</div>
+            <div class="kpi-value" id="kpiLBVal">—</div>
+            <div class="kpi-meta" id="kpiLBMeta">Margem: —</div>
+          </div>
+          <div class="kpi-card kpi-ebitda">
+            <div class="kpi-label">EBITDA</div>
+            <div class="kpi-value" id="kpiEBITDAVal">—</div>
+            <div class="kpi-meta" id="kpiEBITDAMeta">Margem: —</div>
+          </div>
+          <div class="kpi-card kpi-ll">
+            <div class="kpi-label">Lucro Líquido</div>
+            <div class="kpi-value" id="kpiLLVal">—</div>
+            <div class="kpi-meta" id="kpiLLMeta">Margem: —</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DRE TABLE -->
+      <section class="table-section">
+        <div class="section-header">
+          <h2>Demonstração do Resultado — Visão Consolidada</h2>
+        </div>
+        <div class="table-wrapper">
+          <table class="dre-table" id="dreTable">
+            <thead id="dreHead"></thead>
+            <tbody id="dreBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CHARTS -->
+      <section class="charts-section">
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3>Evolução EBITDA &amp; Lucro Líquido</h3>
+              <span class="chart-hint">Barras = EBITDA · Linha = Lucro Líquido</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chartEvolution"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3>Comparativo de Resultados por Período</h3>
+              <span class="chart-hint">Receita Bruta · Lucro Bruto · EBITDA · Lucro Líquido</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chartComparison"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      </div><!-- /dreSection -->
+
+      <!-- ── BALANCETE ──────────────────────── -->
+      <div id="bpSection" style="display:none">
+
+        <section class="kpis-section">
+          <div class="kpis-grid">
+            <div class="kpi-card kpi-receita">
+              <div class="kpi-label">Total Ativo</div>
+              <div class="kpi-value" id="bpKpiAtivoVal">—</div>
+              <div class="kpi-meta" id="bpKpiAtivoMeta"></div>
+            </div>
+            <div class="kpi-card kpi-lb">
+              <div class="kpi-label">Total Passivo + PL</div>
+              <div class="kpi-value" id="bpKpiPassivoVal">—</div>
+              <div class="kpi-meta" id="bpKpiPassivoMeta"></div>
+            </div>
+            <div class="kpi-card kpi-ebitda">
+              <div class="kpi-label">Ativo Circulante</div>
+              <div class="kpi-value" id="bpKpiACVal">—</div>
+              <div class="kpi-meta" id="bpKpiACMeta">Grupo 11</div>
+            </div>
+            <div class="kpi-card kpi-ll">
+              <div class="kpi-label">Verificação (Δ)</div>
+              <div class="kpi-value" id="bpKpiDeltaVal">—</div>
+              <div class="kpi-meta">Ativo − (Passivo + PL)</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="table-section">
+          <div class="section-header">
+            <h2>Balanço Patrimonial</h2>
+            <span class="bp-hint">Clique em qualquer linha para ver os lançamentos</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="dre-table bp-table" id="bpTable">
+              <thead id="bpHead"></thead>
+              <tbody id="bpBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+      </div><!-- /bpSection -->
+
+    </div><!-- /dashboard -->
+  </main>
+
+  <!-- ══════════════════════════════════════════
+       DRILL-DOWN DRAWER
+  ═══════════════════════════════════════════ -->
+  <div class="dd-overlay" id="ddOverlay"></div>
+  <aside class="dd-drawer" id="ddDrawer" aria-hidden="true">
+
+    <div class="dd-header">
+      <div class="dd-title">
+        <span class="dd-prefix" id="ddPrefix"></span>
+        <h3 id="ddTitleText">Detalhamento</h3>
+      </div>
+      <div class="dd-hactions">
+        <button class="dd-btn" id="ddBtnExport">⬇ CSV</button>
+        <button class="dd-close" id="ddClose" title="Fechar">✕</button>
+      </div>
+    </div>
+
+    <div class="dd-toolbar">
+      <div class="dd-tabs" id="ddTabs"></div>
+      <input id="ddSearch" class="dd-search" type="text"
+             placeholder="Buscar por histórico, conta ou empresa…">
+    </div>
+
+    <div class="dd-stats" id="ddStats"></div>
+
+    <div class="dd-table-wrap">
+      <table class="dd-table">
+        <thead>
+          <tr>
+            <th class="dd-col-toggle"></th>
+            <th>Conta</th>
+            <th>Descrição da Conta</th>
+            <th class="dd-col-count">Lanç.</th>
+            <th class="dd-col-val">Subtotal (R$)</th>
+          </tr>
+        </thead>
+        <tbody id="ddBody"></tbody>
+      </table>
+    </div>
+
+    <div class="dd-footer" id="ddFooter"></div>
+  </aside>
+
+  <footer class="footer">
+    <span>DRE — Relatório de Controladoria</span>
+    <span id="footerTimestamp"></span>
+  </footer>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

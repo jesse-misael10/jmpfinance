@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fluxo de Caixa — JMP Finance</title>
+  <link rel="stylesheet" href="../_shared/tokens.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+<!-- ───────────────────── HEADER ───────────────────── -->
+<header class="app-header">
+  <div class="header-left">
+    <span class="brand-badge">FC</span>
+    <div class="header-titles">
+      <span class="header-title">Fluxo de Caixa</span>
+      <span class="header-subtitle">JMP Finance</span>
+    </div>
+  </div>
+  <nav class="tab-nav" role="tablist">
+    <button class="tab-btn active" data-tab="dashboard" role="tab" aria-selected="true">
+      <span>📊</span> Dashboard
+    </button>
+    <button class="tab-btn" data-tab="lancamentos" role="tab" aria-selected="false">
+      <span>📋</span> Lançamentos
+    </button>
+    <button class="tab-btn" data-tab="configuracoes" role="tab" aria-selected="false">
+      <span>⚙️</span> Configurações
+    </button>
+  </nav>
+  <div class="header-right">
+    <button class="btn btn-primary" id="btn-novo-lancamento">+ Novo Lançamento</button>
+  </div>
+</header>
+
+<!-- ───────────────────── TAB: DASHBOARD ───────────────────── -->
+<div class="tab-content active" id="tab-dashboard">
+
+  <!-- Filter bar -->
+  <div class="filter-bar" id="dash-filter-bar">
+    <div class="filter-group">
+      <label class="filter-label">Business Unit</label>
+      <select class="form-control" id="dash-bu-select"></select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Período</label>
+      <select class="form-control" id="dash-periodo-select">
+        <option value="este-mes">Este Mês</option>
+        <option value="proximos-3">Próximos 3 meses</option>
+        <option value="proximos-6">Próximos 6 meses</option>
+        <option value="este-ano">Este Ano</option>
+        <option value="personalizado">Personalizado</option>
+      </select>
+    </div>
+    <div class="filter-group" id="dash-custom-range" style="display:none;">
+      <label class="filter-label">De</label>
+      <input type="date" class="form-control" id="dash-data-inicio" />
+    </div>
+    <div class="filter-group" id="dash-custom-range-end" style="display:none;">
+      <label class="filter-label">Até</label>
+      <input type="date" class="form-control" id="dash-data-fim" />
+    </div>
+    <div class="filter-group filter-group-btn">
+      <button class="btn btn-primary" id="dash-aplicar-btn">Aplicar</button>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi-card kpi-saldo">
+      <div class="kpi-label">Saldo Atual</div>
+      <div class="kpi-value" id="kpi-saldo-atual">R$ 0,00</div>
+      <div class="kpi-sub">Entradas realizadas até hoje</div>
+    </div>
+    <div class="kpi-card kpi-entradas">
+      <div class="kpi-label">Entradas do Período</div>
+      <div class="kpi-value" id="kpi-entradas">R$ 0,00</div>
+      <div class="kpi-sub">Realizado + Projetado</div>
+    </div>
+    <div class="kpi-card kpi-saidas">
+      <div class="kpi-label">Saídas do Período</div>
+      <div class="kpi-value" id="kpi-saidas">R$ 0,00</div>
+      <div class="kpi-sub">Realizado + Projetado</div>
+    </div>
+    <div class="kpi-card kpi-projetado">
+      <div class="kpi-label">Saldo Projetado</div>
+      <div class="kpi-value" id="kpi-projetado">R$ 0,00</div>
+      <div class="kpi-sub">Fim do período</div>
+    </div>
+  </div>
+
+  <!-- Charts Row 1: Saldo Acumulado (full width) -->
+  <div class="charts-section">
+    <div class="chart-card chart-full">
+      <div class="chart-header">
+        <span class="chart-title">Saldo Acumulado ao Longo do Tempo</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chart-saldo" height="90"></canvas>
+      </div>
+      <div class="chart-empty" id="chart-saldo-empty" style="display:none;">
+        <span class="empty-icon">📈</span>
+        <p>Sem dados para o período selecionado</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row 2: Bar + Doughnut -->
+  <div class="charts-row">
+    <div class="chart-card chart-half-wide">
+      <div class="chart-header">
+        <span class="chart-title">Entradas vs Saídas por Mês</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chart-barras" height="160"></canvas>
+      </div>
+      <div class="chart-empty" id="chart-barras-empty" style="display:none;">
+        <span class="empty-icon">📊</span>
+        <p>Sem dados para o período selecionado</p>
+      </div>
+    </div>
+    <div class="chart-card chart-half-narrow">
+      <div class="chart-header">
+        <span class="chart-title">Distribuição Entradas vs Saídas</span>
+      </div>
+      <div class="chart-body chart-body-doughnut">
+        <canvas id="chart-donut" height="220"></canvas>
+      </div>
+      <div class="chart-empty" id="chart-donut-empty" style="display:none;">
+        <span class="empty-icon">🍩</span>
+        <p>Sem dados para o período selecionado</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Lancamentos -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-title">Lançamentos Recentes</span>
+      <span class="section-sub">Últimos 10 no período</span>
+    </div>
+    <div class="table-wrapper">
+      <table class="fc-table" id="dash-recentes-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Status</th>
+            <th>Saldo Acumulado</th>
+          </tr>
+        </thead>
+        <tbody id="dash-recentes-body">
+        </tbody>
+      </table>
+      <div class="empty-state" id="dash-recentes-empty" style="display:none;">
+        <span class="empty-icon">📋</span>
+        <p>Nenhum lançamento no período selecionado</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ───────────────────── TAB: LANÇAMENTOS ───────────────────── -->
+<div class="tab-content" id="tab-lancamentos">
+
+  <!-- Toolbar -->
+  <div class="filter-bar" id="lanc-filter-bar">
+    <div class="filter-group filter-group-search">
+      <label class="filter-label">Buscar</label>
+      <input type="text" class="form-control" id="lanc-search" placeholder="Descrição ou observação..." />
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">BU</label>
+      <select class="form-control" id="lanc-bu-select"></select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Status</label>
+      <select class="form-control" id="lanc-status-select">
+        <option value="">Todos</option>
+        <option value="realizado">Realizado</option>
+        <option value="projetado">Projetado</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Mês</label>
+      <input type="month" class="form-control" id="lanc-mes-select" />
+    </div>
+    <div class="filter-group filter-group-count">
+      <span class="count-display" id="lanc-count">0 lançamentos</span>
+    </div>
+    <div class="filter-group filter-group-btn">
+      <button class="btn btn-outline" id="lanc-export-btn">⬇ Exportar CSV</button>
+      <button class="btn btn-outline" id="lanc-export-pdf-btn">⬇ Exportar PDF</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="section-card">
+    <div class="table-wrapper">
+      <table class="fc-table" id="lanc-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>BU</th>
+            <th>Descrição</th>
+            <th>Observação</th>
+            <th>Valor</th>
+            <th>Saldo Acumulado</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="lanc-table-body">
+        </tbody>
+      </table>
+      <div class="empty-state" id="lanc-empty" style="display:none;">
+        <span class="empty-icon">📋</span>
+        <p>Nenhum lançamento encontrado</p>
+        <p class="empty-sub">Clique em "+ Novo Lançamento" para adicionar</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import -->
+  <div class="import-card" id="import-area">
+    <input type="file" id="import-file-input" accept=".xlsx,.xls" style="display:none;" />
+    <div class="import-icon">📥</div>
+    <div class="import-title">Importar Excel</div>
+    <div class="import-sub">Colunas esperadas: <strong>DATA · DESCRICAO · OBSERVACAO · VALOR · STATUS · BU</strong></div>
+    <button class="btn btn-outline" id="import-btn">Selecionar arquivo .xlsx / .xls</button>
+  </div>
+
+</div>
+
+<!-- ───────────────────── TAB: CONFIGURAÇÕES ───────────────────── -->
+<div class="tab-content" id="tab-configuracoes">
+
+  <!-- BUs Section -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-title">Business Units</span>
+      <button class="btn btn-primary btn-sm" id="config-nova-bu-btn">+ Nova BU</button>
+    </div>
+
+    <!-- Inline form for new/edit BU -->
+    <div class="inline-form" id="bu-form" style="display:none;">
+      <input type="hidden" id="bu-form-id" />
+      <input type="text" class="form-control" id="bu-form-nome" placeholder="Nome da BU" style="max-width:280px;" />
+      <button class="btn btn-primary btn-sm" id="bu-form-save">Salvar</button>
+      <button class="btn btn-outline btn-sm" id="bu-form-cancel">Cancelar</button>
+    </div>
+
+    <div id="bu-list"></div>
+  </div>
+
+  <!-- Data Section -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-title">Gerenciar Dados</span>
+    </div>
+    <div class="data-actions">
+      <button class="btn btn-outline" id="config-export-json">⬇ Exportar todos os dados (JSON)</button>
+      <label class="btn btn-outline" style="cursor:pointer;">
+        ⬆ Importar dados (JSON)
+        <input type="file" id="config-import-json-input" accept=".json" style="display:none;" />
+      </label>
+      <button class="btn btn-danger" id="config-clear-data">⚠ Limpar todos os dados</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ───────────────────── MODAL: LANÇAMENTO ───────────────────── -->
+<div class="modal-overlay" id="modal-overlay" style="display:none;" aria-modal="true" role="dialog">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Novo Lançamento</span>
+      <button class="modal-close" id="modal-close-btn" aria-label="Fechar">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="lancamento-form" novalidate>
+        <input type="hidden" id="form-id" />
+
+        <div class="form-group">
+          <label class="form-label">Business Unit <span class="required">*</span></label>
+          <select class="form-control" id="form-bu" required></select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data <span class="required">*</span></label>
+            <input type="date" class="form-control" id="form-data" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status <span class="required">*</span></label>
+            <select class="form-control" id="form-status" required>
+              <option value="realizado">Realizado</option>
+              <option value="projetado">Projetado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descrição <span class="required">*</span></label>
+          <input type="text" class="form-control" id="form-descricao" required placeholder="Ex: Pagamento de fornecedor" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observação</label>
+          <textarea class="form-control" id="form-observacao" rows="2" placeholder="Observações adicionais..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Valor <span class="required">*</span></label>
+          <input type="number" class="form-control" id="form-valor" required step="0.01" placeholder="0,00" />
+          <span class="form-hint">Positivo = entrada (receita) · Negativo = saída (despesa)</span>
+        </div>
+
+        <div class="form-error" id="form-error" style="display:none;"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="modal-cancel-btn">Cancelar</button>
+      <button class="btn btn-primary" id="modal-save-btn">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ───────────────────── TOAST ───────────────────── -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

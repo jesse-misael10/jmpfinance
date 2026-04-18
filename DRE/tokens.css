@@ -1,0 +1,584 @@
+/* ============================================================
+   ASCENSUS GROUP — Design System Tokens
+   _shared/tokens.css
+
+   Importe antes do style.css de cada projeto:
+     <link rel="stylesheet" href="../_shared/tokens.css" />
+     <link rel="stylesheet" href="style.css" />
+
+   Seções:
+     1. Variáveis CSS (cores, sombras, radii, espaçamentos)
+     2. Reset & Base
+     3. Header / Brand
+     4. Tab Nav
+     5. Botões
+     6. Formulários (inputs, selects, textarea)
+     7. Modal & Overlay
+     8. Toast
+     9. Scrollbar
+    10. Utilitários
+   ============================================================ */
+
+/* ============================================================
+   1. VARIÁVEIS
+   ============================================================ */
+:root {
+  /* ── Cor: Marca ── */
+  --c-navy:       #0f2044;   /* Fundo header, linhas de destaque */
+  --c-navy-md:    #1e3a6e;   /* Hover de itens navy, subtotais */
+  --c-blue:       #2563eb;   /* Ação primária */
+  --c-blue-lt:    #eff6ff;   /* Background light de itens azuis */
+  --c-blue-dim:   #dbeafe;   /* Border/chip azul suave */
+
+  /* ── Cor: Semântica ── */
+  --c-green:      #16a34a;
+  --c-green-lt:   #f0fdf4;
+  --c-amber:      #d97706;
+  --c-amber-lt:   #fffbeb;
+  --c-red:        #dc2626;
+  --c-red-lt:     #fef2f2;
+  --c-indigo:     #4f46e5;
+  --c-indigo-lt:  #eef2ff;
+  --c-purple:     #7c3aed;
+
+  /* ── Cor: Neutros ── */
+  --c-text:       #1e293b;   /* Texto principal */
+  --c-muted:      #64748b;   /* Labels, metadados */
+  --c-light:      #94a3b8;   /* Placeholders, ícones desabilitados */
+  --c-border:     #e2e8f0;   /* Bordas leves */
+  --c-border-md:  #cbd5e1;   /* Bordas médias, inputs */
+  --c-bg:         #f8fafc;   /* Background da página */
+  --c-surface:    #ffffff;   /* Cards, modais, tabelas */
+
+  /* ── Radii ── */
+  --radius-sm:    6px;
+  --radius:       .75rem;    /* 12px — cards, modais */
+  --radius-lg:    1rem;      /* 16px — elementos grandes */
+
+  /* ── Sombras ── */
+  --shadow-sm:    0 1px 3px rgba(0,0,0,.07);
+  --shadow:       0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:    0 4px 12px rgba(0,0,0,.10);
+  --shadow-lg:    0 8px 32px rgba(0,0,0,.14);
+
+  /* ── Layout ── */
+  --header-h:     60px;
+}
+
+/* ============================================================
+   2. RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--c-bg);
+  color: var(--c-text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   3. HEADER / BRAND
+   ============================================================ */
+.app-header {
+  background: var(--c-navy);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  height: var(--header-h);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-shrink: 0;
+}
+
+.brand-badge {
+  background: var(--c-blue);
+  color: #fff;
+  font-weight: 800;
+  font-size: .82rem;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  letter-spacing: .06em;
+  flex-shrink: 0;
+}
+
+.header-titles {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.header-main-title {
+  font-size: .9rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.header-subtitle {
+  font-size: .72rem;
+  color: #93c5fd;
+}
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   4. TAB NAV
+   ============================================================ */
+.tab-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  justify-content: center;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: #93c5fd;
+  font-size: .82rem;
+  font-weight: 600;
+  padding: .45rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.tab-btn:hover  { background: rgba(255,255,255,.08); color: #fff; }
+.tab-btn.active { background: rgba(255,255,255,.14); color: #fff; }
+
+/* ============================================================
+   5. BOTÕES
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .45rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: background .15s, border-color .15s, color .15s, box-shadow .15s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--c-blue);
+  color: #fff;
+  border-color: var(--c-blue);
+}
+.btn-primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+
+.btn-outline {
+  background: transparent;
+  color: var(--c-navy);
+  border-color: var(--c-border-md);
+}
+.btn-outline:hover { background: var(--c-bg); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--c-muted);
+  border-color: transparent;
+}
+.btn-ghost:hover { background: var(--c-bg); color: #334155; }
+
+.btn-danger {
+  background: var(--c-red);
+  color: #fff;
+  border-color: var(--c-red);
+}
+.btn-danger:hover { background: #b91c1c; border-color: #b91c1c; }
+
+.btn-sm { padding: .3rem .75rem; font-size: .78rem; }
+.btn-lg { padding: .6rem 1.4rem; font-size: .9rem; }
+
+/* ── Icon button ── */
+.btn-icon {
+  background: transparent;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: .78rem;
+  color: var(--c-muted);
+  transition: background .12s, color .12s, border-color .12s;
+}
+.btn-icon:hover   { background: var(--c-bg); color: #1e293b; }
+.btn-delete:hover { background: var(--c-red-lt); color: var(--c-red); border-color: var(--c-red); }
+
+/* ============================================================
+   6. FORMULÁRIOS
+   ============================================================ */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+}
+
+.form-group label,
+.form-label {
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--c-muted);
+}
+
+.form-control,
+.text-input {
+  border: 1.5px solid var(--c-border-md);
+  border-radius: var(--radius-sm);
+  padding: .4rem .7rem;
+  font-size: .85rem;
+  background: var(--c-surface);
+  color: var(--c-text);
+  width: 100%;
+  transition: border-color .12s, outline .12s;
+}
+.form-control:focus,
+.text-input:focus {
+  outline: 2px solid var(--c-blue);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.select-input {
+  border: 1.5px solid var(--c-border-md);
+  border-radius: var(--radius-sm);
+  padding: .35rem .6rem;
+  font-size: .82rem;
+  background: var(--c-surface);
+  color: var(--c-text);
+  cursor: pointer;
+}
+.select-input:focus {
+  outline: 2px solid var(--c-blue);
+  border-color: transparent;
+}
+.select-full { width: 100%; }
+
+.form-hint {
+  font-size: .72rem;
+  color: var(--c-muted);
+  margin-top: 2px;
+  display: block;
+}
+
+.form-error {
+  background: var(--c-red-lt);
+  color: var(--c-red);
+  border-radius: var(--radius-sm);
+  padding: .4rem .75rem;
+  font-size: .78rem;
+  font-weight: 600;
+}
+
+.required,
+.req { color: var(--c-red); }
+
+/* ── Toggle group ── */
+.toggle-group {
+  display: flex;
+  border: 1.5px solid var(--c-border-md);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.toggle-btn {
+  background: var(--c-surface);
+  border: none;
+  padding: .3rem .85rem;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--c-muted);
+  transition: background .15s, color .15s;
+}
+.toggle-btn.active { background: var(--c-navy); color: #fff; }
+.toggle-btn:hover:not(.active) { background: var(--c-bg); }
+
+/* ── Filter bar ── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: .75rem 1.5rem;
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--c-muted);
+}
+
+/* ============================================================
+   7. MODAL & OVERLAY
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: var(--c-surface);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--c-navy);
+  margin-bottom: .75rem;
+}
+
+.modal-body {
+  font-size: .85rem;
+  color: #334155;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.modal-footer,
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .5rem;
+  margin-top: 1.25rem;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--c-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  margin-left: auto;
+}
+.modal-close:hover { color: var(--c-text); }
+
+/* ============================================================
+   8. TOAST
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #fff;
+  padding: .65rem 1.25rem;
+  border-radius: 8px;
+  font-size: .82rem;
+  font-weight: 600;
+  z-index: 9999;
+  box-shadow: var(--shadow-md);
+  animation: fadeInUp .2s ease;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.toast.success { background: var(--c-green); }
+.toast.error   { background: var(--c-red); }
+.toast.warning { background: var(--c-amber); }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ============================================================
+   9. SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--c-bg); }
+::-webkit-scrollbar-thumb { background: var(--c-border-md); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ============================================================
+   10. UTILITÁRIOS
+   ============================================================ */
+
+/* Valores / semântica de cor */
+.val-pos  { color: var(--c-green); }
+.val-neg  { color: var(--c-red); }
+.val-zero { color: var(--c-muted); }
+
+/* Badges de status */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: .68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.badge-green  { background: var(--c-green-lt); color: var(--c-green); }
+.badge-red    { background: var(--c-red-lt);   color: var(--c-red); }
+.badge-amber  { background: var(--c-amber-lt); color: var(--c-amber); }
+.badge-blue   { background: var(--c-blue-lt);  color: var(--c-blue); }
+.badge-indigo { background: var(--c-indigo-lt); color: var(--c-indigo); }
+
+/* Section card */
+.section-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .85rem 1.25rem;
+  border-bottom: 1px solid var(--c-border);
+  gap: 1rem;
+}
+
+.section-title {
+  font-size: .9rem;
+  font-weight: 800;
+  color: var(--c-navy);
+}
+
+.section-title-sm {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--c-navy);
+}
+
+/* Table wrapper */
+.table-wrapper {
+  background: var(--c-surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+}
+
+/* KPI grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.kpi-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.kpi-label {
+  font-size: .72rem;
+  color: var(--c-muted);
+  font-weight: 600;
+  margin-bottom: .3rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.kpi-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--c-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-sub {
+  font-size: .7rem;
+  color: var(--c-light);
+  margin-top: .2rem;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: 3rem 1rem;
+  color: var(--c-muted);
+  font-size: .85rem;
+  text-align: center;
+}
+
+/* Divisor */
+.config-divider { border: none; border-top: 1px solid var(--c-border); margin: 1.5rem 0; }
+
+/* ============================================================
+   RESPONSIVE BASE
+   ============================================================ */
+@media (max-width: 700px) {
+  .app-header {
+    flex-wrap: wrap;
+    height: auto;
+    padding: .5rem 1rem;
+    gap: .5rem;
+  }
+  .tab-nav {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: .25rem;
+  }
+  .header-right { gap: .4rem; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}

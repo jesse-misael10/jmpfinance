@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>BankControl | Gestão Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+        .sidebar { min-height: 100vh; background: #212529; color: white; width: 250px; position: fixed; }
+        .main-content { margin-left: 250px; padding: 30px; width: calc(100% - 250px); }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .nav-link { color: #adb5bd; padding: 12px; transition: 0.3s; }
+        .nav-link.active { color: white; background: #0d6efd; border-radius: 8px; }
+        .table-scroll { max-height: 300px; overflow-y: auto; }
+        .sticky-thead th { position: sticky; top: 0; background: #f8f9fa; z-index: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="p-4 fw-bold fs-5 border-bottom border-secondary mb-3 text-primary text-center">🏦 BankControl</div>
+        <nav class="nav flex-column px-3">
+            <a class="nav-link {{ 'active' if view == 'lista' }}" href="/?view=lista"><i class="fas fa-list me-2"></i> Meus Contratos</a>
+            <a class="nav-link {{ 'active' if view == 'resumo' }}" href="/?view=resumo"><i class="fas fa-chart-line me-2"></i> Relatórios</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        {% if view == 'lista' %}
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card p-4 shadow-sm mb-4">
+                        <h5 class="fw-bold mb-3">Novo Lançamento</h5>
+                        <form method="POST">
+                            <label class="small fw-bold">Modalidade</label>
+                            <select name="modalidade" class="form-select mb-2">
+                                <option value="Capital de Giro">Capital de Giro</option>
+                                <option value="Financiamento">Financiamento</option>
+                            </select>
+                            <label class="small fw-bold">Banco</label>
+                            <input type="text" name="banco" class="form-control mb-2" required>
+                            <label class="small fw-bold">Valor Principal</label>
+                            <input type="number" step="0.01" name="valor" class="form-control mb-2" required>
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <label class="small fw-bold">Taxa a.m%</label>
+                                    <input type="number" step="0.01" name="taxa" class="form-control" required>
+                                </div>
+                                <div class="col">
+                                    <label class="small fw-bold">Prazo</label>
+                                    <input type="number" name="prazo" class="form-control" required>
+                                </div>
+                            </div>
+                            <label class="small fw-bold">1ª Parcela</label>
+                            <input type="date" name="data_primeira" class="form-control mb-3" required>
+                            <button type="submit" class="btn btn-primary w-100 fw-bold text-white">GERAR CONTRATO</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    {% for c in contratos | reverse %}
+                    <div class="card p-4 mb-4 border-start border-primary border-4 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="fw-bold mb-0 text-primary">{{ c.modalidade }} <small class="text-muted">({{ c.banco }})</small></h5>
+                            <a href="/excluir/{{ c.id }}" class="text-danger"><i class="fas fa-trash-alt fa-lg"></i></a>
+                        </div>
+                        <div class="row mb-3 text-center">
+                            <div class="col border-end">Principal: <br><strong>R$ {{ "{:,.2f}".format(c.valor_principal if c.valor_principal else 0) }}</strong></div>
+                            <div class="col border-end">Taxa: <br><strong>{{ c.taxa_mensal }}% a.m.</strong></div>
+                            <div class="col">Parcela: <br><strong class="text-primary">R$ {{ "{:,.2f}".format(c.parcela if c.parcela else 0) }}</strong></div>
+                        </div>
+                        
+                        <div class="table-scroll border rounded">
+                            <table class="table table-sm table-hover mb-0 small">
+                                <thead class="sticky-thead">
+                                    <tr><th>#</th><th>Data</th><th>Juros</th><th>Amortiz.</th><th>Saldo</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in c.fluxo %}
+                                    <tr>
+                                        <td>{{ p.n }}</td>
+                                        <td>{{ p.data_tela }}</td>
+                                        <td class="text-danger">R$ {{ "{:,.2f}".format(p.juros) }}</td>
+                                        <td class="text-success">R$ {{ "{:,.2f}".format(p.amortizacao) }}</td>
+                                        <td class="fw-bold text-end">R$ {{ "{:,.2f}".format(p.saldo) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not contratos %}
+                        <div class="text-center p-5 text-muted">Nenhum contrato lançado ainda.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+        {% elif view == 'resumo' %}
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-filter me-2 text-primary"></i>Filtro de Período</h5>
+                <form class="row g-3 align-items-end" method="GET">
+                    <input type="hidden" name="view" value="resumo">
+                    <div class="col-md-4">
+                        <label class="small fw-bold">Data Início</label>
+                        <input type="date" name="data_ini" class="form-control" value="{{ d_ini }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small fw-bold">Data Fim</label>
+                        <input type="date" name="data_fim" class="form-control" value="{{ d_fim }}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100 fw-bold text-white">FILTRAR RELATÓRIO</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="row mb-4 text-center">
+                <div class="col-md-4">
+                    <div class="card p-4 border-bottom border-primary border-4">
+                        <small class="text-muted fw-bold">AMORTIZAÇÃO TOTAL</small>
+                        <h3 class="fw-bold mt-1">R$ {{ "{:,.2f}".format(resumo.principal) }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4 border-bottom border-danger border-4">
+                        <small class="text-muted fw-bold">JUROS PAGOS</small>
+                        <h3 class="fw-bold text-danger mt-1">R$ {{ "{:,.2f}".format(resumo.juros) }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4 bg-primary text-white shadow">
+                        <small class="fw-bold opacity-75">DESEMBOLSO TOTAL</small>
+                        <h3 class="fw-bold mt-1">R$ {{ "{:,.2f}".format(resumo.total) }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="card p-4 shadow-sm">
+                        <h6 class="fw-bold mb-4">Proporção Principal vs. Juros</h6>
+                        <canvas id="chartRelatorio" height="150"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="card p-4 h-100 d-flex flex-column justify-content-center text-center shadow-sm">
+                        <h1 class="display-4 fw-bold text-primary">
+                            {{ "{:.1f}%".format((resumo.juros / resumo.total * 100) if resumo.total > 0 else 0) }}
+                        </h1>
+                        <p class="text-muted fw-bold">Peso dos Juros no Período</p>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                new Chart(document.getElementById('chartRelatorio'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Principal', 'Juros'],
+                        datasets: [{
+                            data: [{{ resumo.principal }}, {{ resumo.juros }}],
+                            backgroundColor: ['#0d6efd', '#dc3545'],
+                            borderRadius: 10
+                        }]
+                    },
+                    options: { 
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            </script>
+        {% endif %}
+    </div>
+</body>
+</html>

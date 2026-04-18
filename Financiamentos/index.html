@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Empréstimos &amp; Financiamentos</title>
+  <link rel="stylesheet" href="../_shared/tokens.css" />
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="brand-badge">EF</div>
+        <div>
+          <h1>Empréstimos &amp; Financiamentos</h1>
+          <p>Controle de Operações Financeiras</p>
+        </div>
+      </div>
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+        <button class="tab-btn" data-tab="operacoes">📋 Operações</button>
+        <button class="tab-btn" data-tab="simulador">🧮 Simulador</button>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-primary" id="btnNovaOp">+ Nova Operação</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- ── DASHBOARD ──────────────────────────────────── -->
+    <section class="page" id="pageDashboard">
+      <div class="kpis-grid" id="dashKpis"></div>
+
+      <!-- COTAÇÕES AO VIVO -->
+      <div class="cotacoes-bar" id="cotacoesBar" style="display:none">
+        <div class="cotacoes-left">
+          <span class="cotacoes-titulo">🌐 Cotações ao Vivo</span>
+          <div class="cotacoes-chips" id="cotacoesChips"></div>
+          <span class="cotacoes-ts" id="cotacoesTs"></span>
+        </div>
+        <div class="cotacoes-right">
+          <button class="btn-cotacao" id="btnAtualizarCotacoes">↻ Atualizar</button>
+        </div>
+      </div>
+
+      <!-- EXPOSIÇÃO CAMBIAL -->
+      <div class="section-block" id="fxBlock" style="display:none">
+        <div class="section-header">
+          <h2>Exposição Cambial</h2>
+          <span class="section-hint">FINIMP + NDF — posição líquida e marcação a mercado</span>
+        </div>
+        <div class="fx-grid" id="fxGrid"></div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-header">
+          <h2>Alertas de Vencimento</h2>
+          <span class="section-hint">Parcelas pendentes nos próximos 90 dias e em atraso</span>
+        </div>
+        <div id="alertsContent"></div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>Evolução do Saldo Devedor</h3>
+            <span class="chart-hint">Próximos 24 meses — total consolidado (BRL)</span>
+          </div>
+          <div class="chart-wrapper"><canvas id="chartSaldo"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>Composição da Dívida</h3>
+            <span class="chart-hint">Por credor (saldo devedor atual em BRL)</span>
+          </div>
+          <div class="chart-wrapper chart-wrapper-sm"><canvas id="chartComposicao"></canvas></div>
+        </div>
+        <div class="chart-card chart-wide">
+          <div class="chart-card-header">
+            <h3>Amortização vs Juros</h3>
+            <span class="chart-hint">Próximos 12 meses — parcelas pendentes (BRL)</span>
+          </div>
+          <div class="chart-wrapper"><canvas id="chartAmortJuros"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── OPERAÇÕES ──────────────────────────────────── -->
+    <section class="page" id="pageOperacoes" style="display:none">
+      <div class="ops-toolbar">
+        <input type="text" id="opsSearch" class="ops-search" placeholder="Buscar por descrição ou credor…">
+        <div class="ops-filters">
+          <select id="filtroStatus">
+            <option value="">Todos os status</option>
+            <option value="ativa">Ativa</option>
+            <option value="vencida">Vencida</option>
+            <option value="encerrada">Encerrada</option>
+          </select>
+          <select id="filtroTipo">
+            <option value="">Todos os tipos</option>
+            <option value="emprestimo">Empréstimo</option>
+            <option value="financiamento">Financiamento</option>
+            <option value="finimp">FINIMP</option>
+            <option value="ndf">NDF</option>
+            <option value="debenture">Debênture</option>
+            <option value="cri">CRI</option>
+            <option value="cra">CRA</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <span id="opsCount" class="ops-count"></span>
+      </div>
+
+      <div class="table-wrapper" id="opsTableWrap">
+        <table class="ops-table" id="opsTable">
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Credor</th>
+              <th>Tipo</th>
+              <th>Sistema / Moeda</th>
+              <th class="col-num">Taxa a.m. / Trava</th>
+              <th class="col-num">Saldo / Nocional</th>
+              <th class="col-num">Próx. Parcela / MtM</th>
+              <th>Próx. Vencimento</th>
+              <th>Status</th>
+              <th class="col-acoes">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="opsBody"></tbody>
+        </table>
+      </div>
+      <div id="opsEmpty" class="empty-state" style="display:none">
+        <div class="empty-icon">📂</div>
+        <p>Nenhuma operação cadastrada ainda.</p>
+        <button class="btn-primary" id="btnNovaOpEmpty">+ Nova Operação</button>
+      </div>
+    </section>
+
+    <!-- ── SIMULADOR ──────────────────────────────────── -->
+    <section class="page" id="pageSimulador" style="display:none">
+      <div class="sim-layout">
+        <div class="sim-form-card">
+          <h2>Parâmetros</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Valor (R$)</label>
+              <input type="number" id="simValor" placeholder="100000" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>Taxa Mensal (% a.m.)</label>
+              <input type="number" id="simTaxa" placeholder="1,00" min="0" step="0.001">
+            </div>
+            <div class="form-group">
+              <label>Nº de Parcelas</label>
+              <input type="number" id="simNParcelas" placeholder="12" min="1" step="1">
+            </div>
+            <div class="form-group">
+              <label>Periodicidade</label>
+              <select id="simPeriodicidade">
+                <option value="mensal">Mensal</option>
+                <option value="trimestral">Trimestral</option>
+                <option value="semestral">Semestral</option>
+                <option value="anual">Anual</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sistema de Amortização</label>
+              <select id="simSistema">
+                <option value="price">Price (Parcela Constante)</option>
+                <option value="sac">SAC (Amortização Constante)</option>
+                <option value="bullet">Bullet (Principal no Final)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Data Inicial</label>
+              <input type="date" id="simData">
+            </div>
+          </div>
+          <button class="btn-primary sim-btn" id="btnSimular">Calcular</button>
+        </div>
+        <div id="simResult" style="display:none">
+          <div class="sim-kpis" id="simKpis"></div>
+          <div class="table-wrapper">
+            <table class="ops-table plano-table">
+              <thead>
+                <tr>
+                  <th class="col-num">Nº</th><th>Vencimento</th>
+                  <th class="col-num">Saldo Inicial</th><th class="col-num">Amortização</th>
+                  <th class="col-num">Juros</th><th class="col-num">Parcela</th>
+                  <th class="col-num">Saldo Final</th>
+                </tr>
+              </thead>
+              <tbody id="simBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══════════════════════════════════════════
+       MODAL — Cadastro / Edição
+  ═══════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-header">
+      <h2 id="modalTitle">Nova Operação</h2>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="opId">
+
+      <!-- Seletor de categoria -->
+      <div class="modal-cat-bar">
+        <button class="cat-btn active" data-cat="padrao">Empréstimo / Financiamento</button>
+        <button class="cat-btn" data-cat="finimp">FINIMP</button>
+        <button class="cat-btn" data-cat="ndf">NDF</button>
+      </div>
+
+      <!-- CAMPOS PADRÃO (empréstimo / financiamento / debênture etc.) -->
+      <div id="formPadrao">
+        <div class="modal-cols">
+          <fieldset class="modal-section">
+            <legend>Identificação</legend>
+            <div class="form-grid">
+              <div class="form-group form-group-wide">
+                <label>Descrição <span class="req">*</span></label>
+                <input type="text" id="opDescricao" placeholder="Ex: Capital de Giro — Banco Bradesco">
+              </div>
+              <div class="form-group">
+                <label>Credor <span class="req">*</span></label>
+                <input type="text" id="opCredor" placeholder="Ex: Banco Bradesco">
+              </div>
+              <div class="form-group">
+                <label>Tipo</label>
+                <select id="opTipo">
+                  <option value="emprestimo">Empréstimo</option>
+                  <option value="financiamento">Financiamento</option>
+                  <option value="debenture">Debênture</option>
+                  <option value="cri">CRI</option>
+                  <option value="cra">CRA</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Finalidade</label>
+                <select id="opFinalidade">
+                  <option value="capital_giro">Capital de Giro</option>
+                  <option value="investimento">Investimento</option>
+                  <option value="imobilizado">Imobilizado</option>
+                  <option value="refinanciamento">Refinanciamento</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+              <div class="form-group form-group-wide">
+                <label>Garantias</label>
+                <input type="text" id="opGarantias" placeholder="Ex: Alienação fiduciária de imóvel">
+              </div>
+              <div class="form-group form-group-wide">
+                <label>Observações</label>
+                <textarea id="opObservacoes" rows="2" placeholder="Informações adicionais…"></textarea>
+              </div>
+            </div>
+          </fieldset>
+          <fieldset class="modal-section">
+            <legend>Condições Financeiras</legend>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Valor Contratado (R$) <span class="req">*</span></label>
+                <input type="number" id="opValor" placeholder="0,00" min="0" step="0.01">
+              </div>
+              <div class="form-group">
+                <label>Data de Contratação <span class="req">*</span></label>
+                <input type="date" id="opDataContratacao">
+              </div>
+              <div class="form-group">
+                <label>Nº de Parcelas <span class="req">*</span></label>
+                <input type="number" id="opNParcelas" placeholder="12" min="1" step="1">
+              </div>
+              <div class="form-group">
+                <label>Periodicidade</label>
+                <select id="opPeriodicidade">
+                  <option value="mensal">Mensal</option>
+                  <option value="trimestral">Trimestral</option>
+                  <option value="semestral">Semestral</option>
+                  <option value="anual">Anual</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Dia de Vencimento</label>
+                <input type="number" id="opDiaVenc" placeholder="15" min="1" max="28" value="15">
+              </div>
+              <div class="form-group">
+                <label>Taxa Mensal (% a.m.) <span class="req">*</span></label>
+                <input type="number" id="opTaxa" placeholder="1,00" min="0" step="0.001">
+              </div>
+              <div class="form-group">
+                <label>Indexador</label>
+                <select id="opIndexador">
+                  <option value="prefixado">Prefixado</option>
+                  <option value="cdi">CDI+</option>
+                  <option value="ipca">IPCA+</option>
+                  <option value="igpm">IGP-M+</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Sistema de Amortização</label>
+                <select id="opSistema">
+                  <option value="price">Price (Parcela Constante)</option>
+                  <option value="sac">SAC (Amortização Constante)</option>
+                  <option value="bullet">Bullet (Principal no Final)</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <!-- CAMPOS FINIMP -->
+      <div id="formFinimp" style="display:none">
+        <div class="modal-cols">
+          <fieldset class="modal-section">
+            <legend>Identificação</legend>
+            <div class="form-grid">
+              <div class="form-group form-group-wide">
+                <label>Descrição <span class="req">*</span></label>
+                <input type="text" id="fiDescricao" placeholder="Ex: FINIMP — Importação Maquinário">
+              </div>
+              <div class="form-group">
+                <label>Credor / Banco <span class="req">*</span></label>
+                <input type="text" id="fiCredor" placeholder="Ex: Citibank">
+              </div>
+              <div class="form-group">
+                <label>Finalidade</label>
+                <select id="fiFinalidade">
+                  <option value="importacao">Importação de Mercadorias</option>
+                  <option value="maquinario">Maquinário / Equipamentos</option>
+                  <option value="materia_prima">Matéria-Prima</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Moeda <span class="req">*</span></label>
+                <select id="fiMoeda">
+                  <option value="USD">USD — Dólar Americano</option>
+                  <option value="EUR">EUR — Euro</option>
+                  <option value="GBP">GBP — Libra Esterlina</option>
+                  <option value="JPY">JPY — Iene</option>
+                  <option value="CHF">CHF — Franco Suíço</option>
+                </select>
+              </div>
+              <div class="form-group form-group-wide">
+                <label>Observações</label>
+                <textarea id="fiObservacoes" rows="2" placeholder="Informações adicionais…"></textarea>
+              </div>
+            </div>
+          </fieldset>
+          <fieldset class="modal-section">
+            <legend>Condições Financeiras</legend>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Valor em Moeda Estrangeira <span class="req">*</span></label>
+                <input type="number" id="fiValorMoeda" placeholder="0,00" min="0" step="0.01">
+              </div>
+              <div class="form-group">
+                <label>Cotação na Contratação (R$/moeda) <span class="req">*</span></label>
+                <input type="number" id="fiCotacaoContratacao" placeholder="5,20" min="0" step="0.0001">
+              </div>
+              <div class="form-group">
+                <label>Cotação Atual (R$/moeda) <span class="req">*</span></label>
+                <input type="number" id="fiCotacaoAtual" placeholder="5,20" min="0" step="0.0001">
+              </div>
+              <div class="form-group">
+                <label>Data de Contratação <span class="req">*</span></label>
+                <input type="date" id="fiDataContratacao">
+              </div>
+              <div class="form-group">
+                <label>Nº de Parcelas <span class="req">*</span></label>
+                <input type="number" id="fiNParcelas" placeholder="6" min="1" step="1">
+              </div>
+              <div class="form-group">
+                <label>Periodicidade</label>
+                <select id="fiPeriodicidade">
+                  <option value="mensal">Mensal</option>
+                  <option value="trimestral">Trimestral</option>
+                  <option value="semestral">Semestral</option>
+                  <option value="anual">Anual</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Dia de Vencimento</label>
+                <input type="number" id="fiDiaVenc" placeholder="15" min="1" max="28" value="15">
+              </div>
+              <div class="form-group">
+                <label>Taxa Mensal em Moeda (% a.m.) <span class="req">*</span></label>
+                <input type="number" id="fiTaxa" placeholder="0,50" min="0" step="0.001">
+              </div>
+              <div class="form-group">
+                <label>Sistema de Amortização</label>
+                <select id="fiSistema">
+                  <option value="price">Price</option>
+                  <option value="sac">SAC</option>
+                  <option value="bullet">Bullet</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <!-- CAMPOS NDF -->
+      <div id="formNdf" style="display:none">
+        <div class="modal-cols">
+          <fieldset class="modal-section">
+            <legend>Identificação</legend>
+            <div class="form-grid">
+              <div class="form-group form-group-wide">
+                <label>Descrição <span class="req">*</span></label>
+                <input type="text" id="ndfDescricao" placeholder="Ex: NDF USD — Trava Exportação Jan/26">
+              </div>
+              <div class="form-group">
+                <label>Contraparte / Banco <span class="req">*</span></label>
+                <input type="text" id="ndfContraparte" placeholder="Ex: Banco Itaú BBA">
+              </div>
+              <div class="form-group">
+                <label>Moeda <span class="req">*</span></label>
+                <select id="ndfMoeda">
+                  <option value="USD">USD — Dólar Americano</option>
+                  <option value="EUR">EUR — Euro</option>
+                  <option value="GBP">GBP — Libra Esterlina</option>
+                  <option value="JPY">JPY — Iene</option>
+                  <option value="CHF">CHF — Franco Suíço</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Direção <span class="req">*</span></label>
+                <select id="ndfDirecao">
+                  <option value="compra">Compra (Long — proteção p/ importador)</option>
+                  <option value="venda">Venda (Short — proteção p/ exportador)</option>
+                </select>
+              </div>
+              <div class="form-group form-group-wide">
+                <label>Observações</label>
+                <textarea id="ndfObservacoes" rows="2" placeholder="Operação vinculada a…"></textarea>
+              </div>
+            </div>
+          </fieldset>
+          <fieldset class="modal-section">
+            <legend>Condições do Contrato</legend>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Nocional (em moeda) <span class="req">*</span></label>
+                <input type="number" id="ndfNocional" placeholder="1000000" min="0" step="0.01">
+              </div>
+              <div class="form-group">
+                <label>Taxa Trava (R$/moeda) <span class="req">*</span></label>
+                <input type="number" id="ndfTaxaTrava" placeholder="5,20" min="0" step="0.0001">
+              </div>
+              <div class="form-group">
+                <label>Cotação Atual (R$/moeda) <span class="req">*</span></label>
+                <input type="number" id="ndfCotacaoAtual" placeholder="5,20" min="0" step="0.0001">
+              </div>
+              <div class="form-group">
+                <label>Data de Contratação <span class="req">*</span></label>
+                <input type="date" id="ndfDataContratacao">
+              </div>
+              <div class="form-group">
+                <label>Data de Liquidação <span class="req">*</span></label>
+                <input type="date" id="ndfDataLiquidacao">
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+    <div class="modal-footer">
+      <button class="btn-secondary" id="modalCancel">Cancelar</button>
+      <button class="btn-primary"   id="modalSave">Salvar Operação</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       DRAWER — Plano de Pagamentos
+  ═══════════════════════════════════════════ -->
+  <div class="dd-overlay" id="drawerOverlay"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <h3 id="drawerTitle">Plano de Pagamentos</h3>
+        <p id="drawerSub" class="drawer-sub"></p>
+      </div>
+      <div class="drawer-hactions">
+        <button class="dd-btn" id="drawerExport">⬇ CSV</button>
+        <button class="dd-close" id="drawerClose">✕</button>
+      </div>
+    </div>
+    <div class="drawer-kpis" id="drawerKpis"></div>
+    <div class="drawer-table-wrap">
+      <table class="plano-table" id="drawerPlanoTable">
+        <thead id="drawerPlanoHead"></thead>
+        <tbody id="drawerBody"></tbody>
+      </table>
+    </div>
+  </aside>
+
+  <footer class="footer">
+    <span>Empréstimos &amp; Financiamentos — Controle de Operações</span>
+    <span id="footerTs"></span>
+  </footer>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
