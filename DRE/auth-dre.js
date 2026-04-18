@@ -98,6 +98,12 @@ function injectUserBar(user) {
       <span style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
         ${user.email}
       </span>
+      <a href="/index.html"
+        style="padding:3px 10px;background:rgba(15,32,68,.8);color:#fff;
+               border:1.5px solid #2563eb;border-radius:5px;
+               font-size:.75rem;font-weight:600;text-decoration:none;white-space:nowrap;">
+        ← Menu
+      </a>
       <button id="btn-logout-dre"
         style="padding:3px 10px;background:rgba(255,255,255,.15);color:#fff;
                border:1px solid rgba(255,255,255,.3);border-radius:5px;
