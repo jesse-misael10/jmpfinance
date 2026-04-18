@@ -11,14 +11,38 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f1f5f9;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: radial-gradient(ellipse at 60% 40%, #1e3a6e 0%, #0f2044 50%, #060d1a 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Blobs decorativos */
+    body::before {
+      content: '';
+      position: fixed;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,.12) 0%, transparent 70%);
+      top: -150px; right: -100px;
+      pointer-events: none;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,.08) 0%, transparent 70%);
+      bottom: -80px; left: -80px;
+      pointer-events: none;
     }
 
     .login-wrap {
+      position: relative;
+      z-index: 1;
       width: 100%;
       max-width: 400px;
       padding: 1.5rem;
@@ -33,34 +57,36 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 56px;
-      height: 56px;
-      background: #0f2044;
+      width: 60px;
+      height: 60px;
+      background: #2563eb;
       color: #fff;
       font-weight: 800;
       font-size: 1.1rem;
-      border-radius: 12px;
+      border-radius: 16px;
       letter-spacing: .05em;
       margin-bottom: .75rem;
+      box-shadow: 0 8px 32px rgba(37,99,235,.4);
     }
 
     .login-title {
       font-size: 1.3rem;
       font-weight: 700;
-      color: #0f2044;
+      color: #fff;
     }
 
     .login-sub {
       font-size: .82rem;
-      color: #64748b;
+      color: rgba(255,255,255,.45);
       margin-top: .25rem;
     }
 
     .login-card {
-      background: #fff;
-      border-radius: 12px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
       padding: 2rem;
-      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+      backdrop-filter: blur(20px);
     }
 
     .form-group {
@@ -71,46 +97,49 @@
     }
 
     .form-label {
-      font-size: .8rem;
+      font-size: .78rem;
       font-weight: 600;
-      color: #374151;
+      color: rgba(255,255,255,.7);
     }
 
     .form-input {
-      padding: .6rem .85rem;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 7px;
+      padding: .65rem .9rem;
+      border: 1.5px solid rgba(255,255,255,.12);
+      border-radius: 8px;
       font-size: .9rem;
-      color: #1e293b;
+      color: #fff;
+      background: rgba(255,255,255,.06);
       outline: none;
       transition: border-color .15s;
       width: 100%;
     }
-    .form-input:focus { border-color: #2563eb; }
+    .form-input::placeholder { color: rgba(255,255,255,.25); }
+    .form-input:focus { border-color: rgba(255,255,255,.35); }
 
     .btn-login {
       width: 100%;
-      padding: .7rem;
-      background: #0f2044;
+      padding: .72rem;
+      background: #2563eb;
       color: #fff;
       border: none;
-      border-radius: 7px;
+      border-radius: 8px;
       font-size: .9rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: background .15s;
-      margin-top: .5rem;
+      transition: background .15s, box-shadow .15s;
+      margin-top: .25rem;
+      box-shadow: 0 4px 16px rgba(37,99,235,.35);
     }
-    .btn-login:hover { background: #1e3a6e; }
+    .btn-login:hover { background: #1d4ed8; box-shadow: 0 6px 20px rgba(37,99,235,.5); }
     .btn-login:disabled { opacity: .6; cursor: not-allowed; }
 
     .error-msg {
       display: none;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #dc2626;
-      border-radius: 7px;
-      padding: .6rem .85rem;
+      background: rgba(220,38,38,.15);
+      border: 1px solid rgba(220,38,38,.35);
+      color: #fca5a5;
+      border-radius: 8px;
+      padding: .6rem .9rem;
       font-size: .82rem;
       margin-bottom: 1rem;
     }
@@ -118,39 +147,49 @@
     .forgot-link {
       text-align: center;
       margin-top: 1rem;
-      font-size: .78rem;
+      font-size: .76rem;
     }
 
     .forgot-link a {
-      color: #2563eb;
+      color: rgba(255,255,255,.45);
       text-decoration: none;
       cursor: pointer;
+      transition: color .15s;
     }
-    .forgot-link a:hover { text-decoration: underline; }
+    .forgot-link a:hover { color: rgba(255,255,255,.75); }
 
     /* Reset password view */
     .reset-view { display: none; }
+
     .back-link {
       display: inline-flex;
       align-items: center;
       gap: .3rem;
       font-size: .78rem;
-      color: #2563eb;
+      color: rgba(255,255,255,.5);
       cursor: pointer;
       margin-bottom: 1rem;
       text-decoration: none;
+      transition: color .15s;
     }
-    .back-link:hover { text-decoration: underline; }
+    .back-link:hover { color: #fff; }
 
     .success-msg {
       display: none;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      color: #16a34a;
-      border-radius: 7px;
-      padding: .6rem .85rem;
+      background: rgba(22,163,74,.15);
+      border: 1px solid rgba(22,163,74,.35);
+      color: #86efac;
+      border-radius: 8px;
+      padding: .6rem .9rem;
       font-size: .82rem;
       margin-bottom: 1rem;
+    }
+
+    .reset-desc {
+      font-size: .82rem;
+      color: rgba(255,255,255,.45);
+      margin-bottom: 1rem;
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -185,9 +224,7 @@
     <a class="back-link" id="link-back">← Voltar ao login</a>
     <div class="success-msg" id="reset-success"></div>
     <div class="error-msg" id="reset-error"></div>
-    <p style="font-size:.82rem;color:#64748b;margin-bottom:1rem;">
-      Digite seu e-mail e enviaremos um link para redefinir sua senha.
-    </p>
+    <p class="reset-desc">Digite seu e-mail e enviaremos um link para redefinir sua senha.</p>
     <div class="form-group">
       <label class="form-label">E-mail</label>
       <input type="email" class="form-input" id="reset-email" placeholder="seu@email.com" />
@@ -200,11 +237,9 @@
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  // Destino após login
-  const params    = new URLSearchParams(window.location.search);
-  const returnTo  = params.get('return') || null;
+  const params   = new URLSearchParams(window.location.search);
+  const returnTo = params.get('return') || null;
 
-  // Se já está logado, redirecionar
   db.auth.getSession().then(({ data: { session } }) => {
     if (session) goToApp();
   });
@@ -213,7 +248,6 @@
     if (returnTo) {
       window.location.href = decodeURIComponent(returnTo);
     } else {
-      // Redirecionar para índice dos apps
       window.location.href = '/index.html';
     }
   }
