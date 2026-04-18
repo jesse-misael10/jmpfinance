@@ -11,223 +11,345 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f1f5f9;
+      background: #0d1117;
       min-height: 100vh;
+      display: flex;
     }
 
-    /* Header */
-    .header {
-      background: #0f2044;
-      padding: 0 2rem;
-      height: 56px;
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      background: linear-gradient(180deg, #0f2044 0%, #0a1628 100%);
+      border-right: 1px solid rgba(255,255,255,.06);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+    }
+
+    .sidebar-logo {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: .75rem;
+      padding: 1.5rem 1.5rem 1.25rem;
     }
-    .header-brand {
+
+    .sidebar-badge {
+      width: 34px;
+      height: 34px;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 800;
+      font-size: .78rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(37,99,235,.4);
+    }
+
+    .sidebar-logo-name  { color: #fff; font-weight: 700; font-size: .9rem; line-height: 1.2; }
+    .sidebar-logo-sub   { color: rgba(255,255,255,.3); font-size: .68rem; }
+
+    .sidebar-divider {
+      height: 1px;
+      background: rgba(255,255,255,.06);
+      margin: 0 1.25rem .75rem;
+    }
+
+    .sidebar-section-label {
+      font-size: .62rem;
+      font-weight: 700;
+      color: rgba(255,255,255,.2);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      padding: .75rem 1.5rem .3rem;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      padding: .55rem 1.25rem .55rem 1.5rem;
+      font-size: .81rem;
+      font-weight: 500;
+      color: rgba(255,255,255,.45);
+      text-decoration: none;
+      border-radius: 8px;
+      margin: 1px .75rem;
+      transition: all .12s;
+    }
+    .sidebar-item:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.06); }
+    .sidebar-item.active { color: #fff; background: rgba(37,99,235,.2); }
+
+    .sidebar-item-icon { font-size: .9rem; width: 18px; text-align: center; opacity: .7; }
+    .sidebar-item.active .sidebar-item-icon { opacity: 1; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 1rem 1.25rem;
+      border-top: 1px solid rgba(255,255,255,.06);
       display: flex;
       align-items: center;
       gap: .75rem;
     }
-    .header-badge {
-      background: #fff;
-      color: #0f2044;
-      font-weight: 800;
-      font-size: .8rem;
-      padding: .25rem .5rem;
-      border-radius: 6px;
-      letter-spacing: .05em;
-    }
-    .header-title {
-      color: #fff;
-      font-weight: 600;
-      font-size: 1rem;
-    }
-    .header-user {
+
+    .sidebar-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
       display: flex;
       align-items: center;
-      gap: 1rem;
-    }
-    .header-email {
-      color: #94a3b8;
-      font-size: .8rem;
-    }
-    .btn-logout {
-      background: transparent;
-      border: 1px solid #334155;
-      color: #94a3b8;
-      padding: .3rem .75rem;
-      border-radius: 6px;
-      font-size: .78rem;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .btn-logout:hover { border-color: #64748b; color: #e2e8f0; }
-
-    /* Main */
-    .main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem;
-    }
-
-    .page-title {
-      font-size: 1.4rem;
+      justify-content: center;
+      font-size: .72rem;
       font-weight: 700;
-      color: #0f172a;
-      margin-bottom: .4rem;
-    }
-    .page-sub {
-      color: #64748b;
-      font-size: .88rem;
-      margin-bottom: 2rem;
+      color: #fff;
+      flex-shrink: 0;
     }
 
-    /* Grid */
+    .sidebar-footer-info { flex: 1; min-width: 0; }
+    .sidebar-footer-email {
+      font-size: .72rem;
+      font-weight: 600;
+      color: rgba(255,255,255,.6);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sidebar-footer-role { font-size: .65rem; color: rgba(255,255,255,.25); }
+
+    .btn-logout-icon {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,.25);
+      font-size: 1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color .15s;
+      padding: .25rem;
+    }
+    .btn-logout-icon:hover { color: rgba(255,255,255,.6); }
+
+    /* ── Content ── */
+    .content {
+      margin-left: 260px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: #161b22;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-titles {}
+    .topbar-title { font-size: 1.1rem; font-weight: 700; color: #e6edf3; }
+    .topbar-sub   { font-size: .78rem; color: rgba(255,255,255,.3); margin-top: .15rem; }
+
+    .topbar-search {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 7px;
+      padding: .38rem .85rem;
+      font-size: .8rem;
+      color: rgba(255,255,255,.6);
+      width: 220px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .topbar-search::placeholder { color: rgba(255,255,255,.25); }
+    .topbar-search:focus { border-color: rgba(255,255,255,.25); }
+
+    /* ── Main ── */
+    .main {
+      padding: 1.75rem 2rem;
+      flex: 1;
+    }
+
     .app-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
     }
 
     .app-card {
-      background: #fff;
+      background: #161b22;
       border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,.07);
-      text-decoration: none;
-      color: inherit;
+      padding: 1.25rem;
+      border: 1px solid rgba(255,255,255,.07);
       display: flex;
       flex-direction: column;
-      gap: .5rem;
-      transition: box-shadow .15s, transform .15s;
-      border: 1.5px solid transparent;
+      gap: .4rem;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color .15s, box-shadow .15s;
     }
     .app-card:hover {
-      box-shadow: 0 4px 16px rgba(0,0,0,.12);
-      transform: translateY(-2px);
-      border-color: #2563eb;
+      border-color: rgba(37,99,235,.5);
+      box-shadow: 0 0 0 1px rgba(37,99,235,.15), 0 4px 20px rgba(0,0,0,.2);
     }
 
     .app-icon {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.3rem;
-      margin-bottom: .25rem;
-    }
-    .icon-blue   { background: #dbeafe; }
-    .icon-green  { background: #dcfce7; }
-    .icon-purple { background: #f3e8ff; }
-    .icon-orange { background: #ffedd5; }
-    .icon-red    { background: #fee2e2; }
-    .icon-teal   { background: #ccfbf1; }
-    .icon-yellow { background: #fef9c3; }
-    .icon-indigo { background: #e0e7ff; }
-
-    .app-name {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #0f172a;
-    }
-    .app-desc {
-      font-size: .8rem;
-      color: #64748b;
-      line-height: 1.4;
+      font-size: 1.15rem;
+      margin-bottom: .15rem;
     }
 
-    .app-arrow {
-      margin-top: auto;
-      padding-top: .75rem;
-      color: #2563eb;
-      font-size: .78rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: .3rem;
-    }
+    .app-name { font-size: .9rem; font-weight: 700; color: #e6edf3; }
+    .app-desc { font-size: .74rem; color: rgba(255,255,255,.3); line-height: 1.45; flex: 1; }
+    .app-link  { padding-top: .5rem; color: #2f81f7; font-size: .74rem; font-weight: 600; }
+
+    /* ── Icon colors ── */
+    .icon-blue   { background: rgba(59,130,246,.12); }
+    .icon-green  { background: rgba(34,197,94,.12); }
+    .icon-purple { background: rgba(168,85,247,.12); }
+    .icon-orange { background: rgba(249,115,22,.12); }
+    .icon-teal   { background: rgba(20,184,166,.12); }
+    .icon-indigo { background: rgba(99,102,241,.12); }
+    .icon-red    { background: rgba(239,68,68,.12); }
+    .icon-yellow { background: rgba(234,179,8,.12); }
   </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-brand">
-    <span class="header-badge">JMP</span>
-    <span class="header-title">JMP Finance</span>
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-badge">JMP</div>
+    <div>
+      <div class="sidebar-logo-name">JMP Finance</div>
+      <div class="sidebar-logo-sub">Painel de Gestão</div>
+    </div>
   </div>
-  <div class="header-user">
-    <span class="header-email" id="user-email"></span>
-    <button class="btn-logout" id="btn-logout">Sair</button>
+
+  <div class="sidebar-divider"></div>
+
+  <div class="sidebar-section-label">Módulos</div>
+
+  <a class="sidebar-item active" href="DRE/index.html">
+    <span class="sidebar-item-icon">📊</span> DRE
+  </a>
+  <a class="sidebar-item" href="Novoprojeto/index.html">
+    <span class="sidebar-item-icon">💰</span> FEE
+  </a>
+  <a class="sidebar-item" href="PFL/index.html">
+    <span class="sidebar-item-icon">📋</span> PFL
+  </a>
+  <a class="sidebar-item" href="CartaoCredito/index.html">
+    <span class="sidebar-item-icon">💳</span> Cartão de Crédito
+  </a>
+  <a class="sidebar-item" href="FluxoCaixa/index.html">
+    <span class="sidebar-item-icon">🔄</span> Fluxo de Caixa
+  </a>
+  <a class="sidebar-item" href="FluxoCaixaProjetado/index.html">
+    <span class="sidebar-item-icon">📈</span> FC Projetado
+  </a>
+  <a class="sidebar-item" href="Financiamentos/index.html">
+    <span class="sidebar-item-icon">🏦</span> Financiamentos
+  </a>
+  <a class="sidebar-item" href="Organograma/index.html">
+    <span class="sidebar-item-icon">🏢</span> Organograma
+  </a>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-avatar" id="sidebar-avatar">JM</div>
+    <div class="sidebar-footer-info">
+      <div class="sidebar-footer-email" id="sidebar-email">—</div>
+      <div class="sidebar-footer-role">Administrador</div>
+    </div>
+    <button class="btn-logout-icon" id="btn-logout" title="Sair">↪</button>
   </div>
-</header>
+</aside>
 
-<main class="main">
-  <div class="page-title">Painel de Aplicativos</div>
-  <div class="page-sub">Selecione um módulo para acessar</div>
-
-  <div class="app-grid">
-
-    <a class="app-card" href="DRE/index.html">
-      <div class="app-icon icon-blue">📊</div>
-      <div class="app-name">DRE</div>
-      <div class="app-desc">Demonstração do Resultado do Exercício — análise mensal e acumulada</div>
-      <div class="app-arrow">Acessar →</div>
-    </a>
-
-    <a class="app-card" href="Novoprojeto/index.html">
-      <div class="app-icon icon-green">💰</div>
-      <div class="app-name">FEE</div>
-      <div class="app-desc">Faturamento + FEE por BU — controle de budget e realizado</div>
-      <div class="app-arrow">Acessar →</div>
-    </a>
-
-    <a class="app-card" href="PFL/index.html">
-      <div class="app-icon icon-purple">📋</div>
-      <div class="app-name">PFL</div>
-      <div class="app-desc">Relatório de Controladoria — DRE mês a mês e acumulado</div>
-      <div class="app-arrow">Acessar →</div>
-    </a>
-
-    <a class="app-card" href="CartaoCredito/index.html">
-      <div class="app-icon icon-orange">💳</div>
-      <div class="app-name">Cartão de Crédito</div>
-      <div class="app-desc">Importação e análise de faturas de cartão corporativo</div>
-      <div class="app-arrow">Acessar →</div>
-    </a>
-
-    <a class="app-card" href="FluxoCaixa/index.html">
-      <div class="app-icon icon-teal">🔄</div>
-      <div class="app-name">Fluxo de Caixa</div>
-      <div class="app-desc">Controle e acompanhamento do fluxo de caixa</div>
-      <div class="app-arrow">Acessar →</div>
-    </a>
-
-    <a class="app-card" href="FluxoCaixaProjetado/index.html">
-      <div class="app-icon icon-indigo">📈</div>
-      <div class="app-name">Fluxo de Caixa Projetado</div>
-      <div class="app-desc">Projeção e planejamento do fluxo de caixa futuro</div>
-      <div class="app-arrow">Acessar →</div>
-    </a>
-
-    <a class="app-card" href="Financiamentos/index.html">
-      <div class="app-icon icon-red">🏦</div>
-      <div class="app-name">Financiamentos</div>
-      <div class="app-desc">Gestão e controle de financiamentos e parcelas</div>
-      <div class="app-arrow">Acessar →</div>
-    </a>
-
-    <a class="app-card" href="Organograma/index.html">
-      <div class="app-icon icon-yellow">🏢</div>
-      <div class="app-name">Organograma</div>
-      <div class="app-desc">Estrutura organizacional da empresa</div>
-      <div class="app-arrow">Acessar →</div>
-    </a>
-
+<!-- ── Content ── -->
+<div class="content">
+  <div class="topbar">
+    <div class="topbar-titles">
+      <div class="topbar-title">Painel de Aplicativos</div>
+      <div class="topbar-sub">Selecione um módulo para acessar</div>
+    </div>
+    <input class="topbar-search" id="search-input" placeholder="Buscar módulo…" />
   </div>
-</main>
+
+  <main class="main">
+    <div class="app-grid" id="app-grid">
+
+      <a class="app-card" href="DRE/index.html" data-name="DRE Demonstração Resultado Exercício">
+        <div class="app-icon icon-blue">📊</div>
+        <div class="app-name">DRE</div>
+        <div class="app-desc">Demonstração do Resultado do Exercício — análise mensal e acumulada</div>
+        <div class="app-link">Acessar →</div>
+      </a>
+
+      <a class="app-card" href="Novoprojeto/index.html" data-name="FEE Faturamento Budget">
+        <div class="app-icon icon-green">💰</div>
+        <div class="app-name">FEE</div>
+        <div class="app-desc">Faturamento + FEE por BU — controle de budget e realizado</div>
+        <div class="app-link">Acessar →</div>
+      </a>
+
+      <a class="app-card" href="PFL/index.html" data-name="PFL Relatório Controladoria">
+        <div class="app-icon icon-purple">📋</div>
+        <div class="app-name">PFL</div>
+        <div class="app-desc">Relatório de Controladoria — DRE mês a mês e acumulado</div>
+        <div class="app-link">Acessar →</div>
+      </a>
+
+      <a class="app-card" href="CartaoCredito/index.html" data-name="Cartão Crédito Faturas">
+        <div class="app-icon icon-orange">💳</div>
+        <div class="app-name">Cartão de Crédito</div>
+        <div class="app-desc">Importação e análise de faturas de cartão corporativo</div>
+        <div class="app-link">Acessar →</div>
+      </a>
+
+      <a class="app-card" href="FluxoCaixa/index.html" data-name="Fluxo Caixa Controle">
+        <div class="app-icon icon-teal">🔄</div>
+        <div class="app-name">Fluxo de Caixa</div>
+        <div class="app-desc">Controle e acompanhamento do fluxo de caixa</div>
+        <div class="app-link">Acessar →</div>
+      </a>
+
+      <a class="app-card" href="FluxoCaixaProjetado/index.html" data-name="Fluxo Caixa Projetado Planejamento">
+        <div class="app-icon icon-indigo">📈</div>
+        <div class="app-name">Fluxo de Caixa Projetado</div>
+        <div class="app-desc">Projeção e planejamento do fluxo de caixa futuro</div>
+        <div class="app-link">Acessar →</div>
+      </a>
+
+      <a class="app-card" href="Financiamentos/index.html" data-name="Financiamentos Parcelas Gestão">
+        <div class="app-icon icon-red">🏦</div>
+        <div class="app-name">Financiamentos</div>
+        <div class="app-desc">Gestão e controle de financiamentos e parcelas</div>
+        <div class="app-link">Acessar →</div>
+      </a>
+
+      <a class="app-card" href="Organograma/index.html" data-name="Organograma Estrutura Organizacional">
+        <div class="app-icon icon-yellow">🏢</div>
+        <div class="app-name">Organograma</div>
+        <div class="app-desc">Estrutura organizacional da empresa</div>
+        <div class="app-link">Acessar →</div>
+      </a>
+
+    </div>
+  </main>
+</div>
 
 <script>
   const { createClient } = supabase;
@@ -239,12 +361,24 @@
       window.location.href = '_shared/login.html?return=' + encodeURIComponent('/index.html');
       return;
     }
-    document.getElementById('user-email').textContent = session.user.email;
+    const email = session.user.email;
+    document.getElementById('sidebar-email').textContent = email;
+    const initials = email.split('@')[0].slice(0, 2).toUpperCase();
+    document.getElementById('sidebar-avatar').textContent = initials;
   })();
 
   document.getElementById('btn-logout').addEventListener('click', async () => {
     await db.auth.signOut();
     window.location.href = '_shared/login.html';
+  });
+
+  // Busca de módulos
+  document.getElementById('search-input').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('.app-card').forEach(card => {
+      const name = card.dataset.name.toLowerCase();
+      card.style.display = name.includes(q) ? '' : 'none';
+    });
   });
 </script>
 
