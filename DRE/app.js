@@ -830,8 +830,6 @@ function abrirModalLancamentos(conta, descConta) {
 
   // Agrupar por mês
   const porMes = {};
-  let totalGeral = 0;
-
   rows.forEach(r => {
     const d = extrairData(r.DATA);
     if (!d) return;
@@ -839,13 +837,11 @@ function abrirModalLancamentos(conta, descConta) {
     if (!porMes[chave]) porMes[chave] = [];
     let saldo = parseFloat(r.SALDO);
     if (isNaN(saldo)) saldo = (parseFloat(r.VALOR_DEBITO) || 0) - (parseFloat(r.VALOR_CREDITO) || 0);
-    const dreVal = -saldo;
-    porMes[chave].push({ ...r, _dreVal: dreVal, _date: d });
-    totalGeral += dreVal;
+    porMes[chave].push({ ...r, _dreVal: -saldo, _date: d });
   });
 
   const meses = Object.keys(porMes).sort();
-  const overlay = document.getElementById('lancModalOverlay');
+  let mesSelecionado = null; // null = Todos
 
   // Título e subtítulo
   document.getElementById('lancModalTitle').textContent = descConta;
@@ -854,31 +850,64 @@ function abrirModalLancamentos(conta, descConta) {
     (filtroFilial.size ? ` · Empresa: ${[...filtroFilial].join(', ')}` : '') +
     (filtroBU.size     ? ` · BU: ${[...filtroBU].join(', ')}` : '');
 
-  // KPIs de resumo
-  const kpisEl = document.getElementById('lancModalKpis');
-  kpisEl.innerHTML = `
-    <div class="lanc-kpi-item">
-      <span class="lanc-kpi-label">Total (DRE)</span>
-      <span class="lanc-kpi-val ${totalGeral >= 0 ? 'pos' : 'neg'}">${formatBRL(totalGeral)}</span>
-    </div>
-    <div class="lanc-kpi-item">
-      <span class="lanc-kpi-label">Lançamentos</span>
-      <span class="lanc-kpi-val">${rows.length}</span>
-    </div>
-    <div class="lanc-kpi-item">
-      <span class="lanc-kpi-label">Períodos</span>
-      <span class="lanc-kpi-val">${meses.length}</span>
-    </div>`;
+  // Barra de meses
+  const periodsEl = document.getElementById('lancModalPeriods');
+  periodsEl.innerHTML = '';
+  const criarBtnMes = (chave, label) => {
+    const btn = document.createElement('button');
+    btn.className = `dash-pb${mesSelecionado === chave ? ' active' : ''}`;
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      mesSelecionado = chave;
+      renderModalConteudo();
+    });
+    return btn;
+  };
+  periodsEl.appendChild(criarBtnMes(null, 'Todos'));
+  meses.forEach(m => {
+    const [ano, mes] = m.split('-');
+    periodsEl.appendChild(criarBtnMes(m, `${MESES_PT[parseInt(mes, 10) - 1]}/${String(ano).slice(2)}`));
+  });
 
-  // Corpo: seções por mês
-  const body = document.getElementById('lancModalBody');
-  body.innerHTML = '';
+  function renderModalConteudo() {
+    // Atualizar botões ativos
+    periodsEl.querySelectorAll('.dash-pb').forEach(btn => btn.classList.remove('active'));
+    periodsEl.querySelectorAll('.dash-pb').forEach((btn, i) => {
+      const chave = i === 0 ? null : meses[i - 1];
+      if (chave === mesSelecionado) btn.classList.add('active');
+    });
 
-  if (!meses.length) {
-    body.innerHTML = '<p style="color:var(--c-muted);text-align:center;padding:2rem;">Nenhum lançamento encontrado.</p>';
-  } else {
-    meses.forEach(mes => {
-      const lancamentos = porMes[mes].sort((a, b) => a._date - b._date);
+    const mesesVisiveis = mesSelecionado ? [mesSelecionado] : meses;
+    const rowsVisiveis  = mesesVisiveis.flatMap(m => porMes[m] || []);
+    const totalVis      = rowsVisiveis.reduce((s, r) => s + r._dreVal, 0);
+
+    // KPIs
+    document.getElementById('lancModalKpis').innerHTML = `
+      <div class="lanc-kpi-item">
+        <span class="lanc-kpi-label">Total (DRE)</span>
+        <span class="lanc-kpi-val ${totalVis >= 0 ? 'pos' : 'neg'}">${formatBRL(totalVis)}</span>
+      </div>
+      <div class="lanc-kpi-item">
+        <span class="lanc-kpi-label">Lançamentos</span>
+        <span class="lanc-kpi-val">${rowsVisiveis.length}</span>
+      </div>
+      <div class="lanc-kpi-item">
+        <span class="lanc-kpi-label">Períodos</span>
+        <span class="lanc-kpi-val">${mesesVisiveis.length}</span>
+      </div>`;
+
+    // Corpo
+    const body = document.getElementById('lancModalBody');
+    body.innerHTML = '';
+    body.scrollTop = 0;
+
+    if (!rowsVisiveis.length) {
+      body.innerHTML = '<p style="color:var(--c-muted);text-align:center;padding:2rem;">Nenhum lançamento encontrado.</p>';
+      return;
+    }
+
+    mesesVisiveis.forEach(mes => {
+      const lancamentos = (porMes[mes] || []).slice().sort((a, b) => a._date - b._date);
       const totalMes    = lancamentos.reduce((s, r) => s + r._dreVal, 0);
       const [ano, m]    = mes.split('-');
       const label       = `${MESES_PT[parseInt(m, 10) - 1]} / ${ano}`;
@@ -886,7 +915,6 @@ function abrirModalLancamentos(conta, descConta) {
       const section = document.createElement('div');
       section.className = 'lanc-mes-section';
 
-      // Cabeçalho do mês
       const header = document.createElement('div');
       header.className = 'lanc-mes-header';
       header.innerHTML = `
@@ -894,28 +922,20 @@ function abrirModalLancamentos(conta, descConta) {
         <span class="lanc-mes-total ${totalMes >= 0 ? '' : 'neg'}">${formatBRL(totalMes)}</span>`;
       section.appendChild(header);
 
-      // Tabela de lançamentos
       const table = document.createElement('table');
       table.className = 'lanc-detail-table';
       table.innerHTML = `
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Histórico</th>
-            <th>BU</th>
-            <th>Saldo</th>
-            <th>Valor DRE</th>
-          </tr>
-        </thead>`;
+        <thead><tr>
+          <th>Data</th><th>Histórico</th><th>BU</th><th>Saldo</th><th>Valor DRE</th>
+        </tr></thead>`;
 
       const tbody = document.createElement('tbody');
       lancamentos.forEach(r => {
         const tr = document.createElement('tr');
-        const dataFmt = r._date.toLocaleDateString('pt-BR');
         const saldo = parseFloat(r.SALDO) || 0;
         const v     = r._dreVal;
         tr.innerHTML = `
-          <td>${dataFmt}</td>
+          <td>${r._date.toLocaleDateString('pt-BR')}</td>
           <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
               title="${(r.HISTORICO || '').replace(/"/g, '&quot;')}">${r.HISTORICO || '—'}</td>
           <td>${r.BU || '—'}</td>
@@ -929,7 +949,8 @@ function abrirModalLancamentos(conta, descConta) {
     });
   }
 
-  overlay.style.display = 'flex';
+  renderModalConteudo();
+  document.getElementById('lancModalOverlay').style.display = 'flex';
 }
 
 // Fechar modal
