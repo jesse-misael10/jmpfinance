@@ -29,6 +29,7 @@
         <button class="btn-secondary" id="btnExportCSV">⬇ Exportar CSV</button>
         <button class="btn-secondary" id="btnNewFile">↩ Novo Arquivo</button>
       </div>
+      <div id="header-user" style="display:flex;align-items:center;gap:.5rem;flex-shrink:0;"></div>
     </div>
   </header>
 
@@ -295,6 +296,24 @@
   </footer>
 
 </div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: LANÇAMENTOS DA CONTA
+═══════════════════════════════════════════ -->
+<div class="lanc-modal-overlay" id="lancModalOverlay" style="display:none;" role="dialog" aria-modal="true">
+  <div class="lanc-modal-box">
+    <div class="lanc-modal-header">
+      <div>
+        <div class="lanc-modal-title" id="lancModalTitle">Lançamentos</div>
+        <div class="lanc-modal-sub" id="lancModalSub"></div>
+      </div>
+      <button class="lanc-modal-close" id="lancModalClose" title="Fechar">✕</button>
+    </div>
+    <div class="lanc-modal-kpis" id="lancModalKpis"></div>
+    <div class="lanc-modal-body" id="lancModalBody"></div>
+  </div>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>

@@ -541,9 +541,13 @@ function criarTH(text, attrs = {}) {
 
 function renderizarTabela(periodos, calculado, total) {
   const thead = document.getElementById('dreHead');
-  const tbody = document.getElementById('dreBody');
+  const oldTbody = document.getElementById('dreBody');
   thead.innerHTML = '';
-  tbody.innerHTML = '';
+
+  // Replace tbody entirely to clear any previously attached click listeners
+  const tbody = document.createElement('tbody');
+  tbody.id = 'dreBody';
+  oldTbody.parentNode.replaceChild(tbody, oldTbody);
 
   const numCols = 2 + (periodos.length + 1) * 2; // prefix + desc + (val+pct) * (N períodos + total)
 
@@ -768,10 +772,17 @@ function construirLinhasDetalhe(linhaId, linhaLabel, periodos, calculado, total)
     return tr;
   };
 
-  const linhas = contas.map(c =>
-    criarLinha(c.descConta, 'idw-conta-row',
-      p => p === 'total' ? c.total : (c.periodos[p] || 0))
-  );
+  const linhas = contas.map(c => {
+    const tr = criarLinha(c.descConta, 'idw-conta-row',
+      p => p === 'total' ? c.total : (c.periodos[p] || 0));
+    // Ícone de detalhe na célula prefixo + clique abre modal de lançamentos
+    tr.cells[0].innerHTML = '<span title="Ver lançamentos">🔍</span>';
+    tr.addEventListener('click', e => {
+      e.stopPropagation();
+      abrirModalLancamentos(c.conta, c.descConta);
+    });
+    return tr;
+  });
 
   // Linha de total só se houver mais de uma conta
   if (contas.length > 1) {
@@ -784,6 +795,138 @@ function construirLinhasDetalhe(linhaId, linhaLabel, periodos, calculado, total)
 
   return linhas;
 }
+
+// ── MODAL: LANÇAMENTOS DA CONTA ──────────────────────────────
+
+function abrirModalLancamentos(conta, descConta) {
+  // Filtrar lançamentos para esta conta respeitando filtros ativos
+  const rows = dadosBrutos.filter(r => {
+    if (String(r.CONTA || '').trim() !== String(conta).trim()) return false;
+    if (!r.DATA) return false;
+    if (filtroFilial.size > 0 && !filtroFilial.has(r.FILIAL_NOME)) return false;
+    if (filtroBU.size     > 0 && !filtroBU.has(r.BU))             return false;
+    return true;
+  });
+
+  // Agrupar por mês
+  const porMes = {};
+  let totalGeral = 0;
+
+  rows.forEach(r => {
+    const d = extrairData(r.DATA);
+    if (!d) return;
+    const chave = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    if (!porMes[chave]) porMes[chave] = [];
+    let saldo = parseFloat(r.SALDO);
+    if (isNaN(saldo)) saldo = (parseFloat(r.VALOR_DEBITO) || 0) - (parseFloat(r.VALOR_CREDITO) || 0);
+    const dreVal = -saldo;
+    porMes[chave].push({ ...r, _dreVal: dreVal, _date: d });
+    totalGeral += dreVal;
+  });
+
+  const meses = Object.keys(porMes).sort();
+  const overlay = document.getElementById('lancModalOverlay');
+
+  // Título e subtítulo
+  document.getElementById('lancModalTitle').textContent = descConta;
+  document.getElementById('lancModalSub').textContent =
+    `Conta: ${conta}` +
+    (filtroFilial.size ? ` · Empresa: ${[...filtroFilial].join(', ')}` : '') +
+    (filtroBU.size     ? ` · BU: ${[...filtroBU].join(', ')}` : '');
+
+  // KPIs de resumo
+  const kpisEl = document.getElementById('lancModalKpis');
+  kpisEl.innerHTML = `
+    <div class="lanc-kpi-item">
+      <span class="lanc-kpi-label">Total (DRE)</span>
+      <span class="lanc-kpi-val ${totalGeral >= 0 ? 'pos' : 'neg'}">${formatBRL(totalGeral)}</span>
+    </div>
+    <div class="lanc-kpi-item">
+      <span class="lanc-kpi-label">Lançamentos</span>
+      <span class="lanc-kpi-val">${rows.length}</span>
+    </div>
+    <div class="lanc-kpi-item">
+      <span class="lanc-kpi-label">Períodos</span>
+      <span class="lanc-kpi-val">${meses.length}</span>
+    </div>`;
+
+  // Corpo: seções por mês
+  const body = document.getElementById('lancModalBody');
+  body.innerHTML = '';
+
+  if (!meses.length) {
+    body.innerHTML = '<p style="color:var(--c-muted);text-align:center;padding:2rem;">Nenhum lançamento encontrado.</p>';
+  } else {
+    meses.forEach(mes => {
+      const lancamentos = porMes[mes].sort((a, b) => a._date - b._date);
+      const totalMes    = lancamentos.reduce((s, r) => s + r._dreVal, 0);
+      const [ano, m]    = mes.split('-');
+      const label       = `${MESES_PT[parseInt(m, 10) - 1]} / ${ano}`;
+
+      const section = document.createElement('div');
+      section.className = 'lanc-mes-section';
+
+      // Cabeçalho do mês
+      const header = document.createElement('div');
+      header.className = 'lanc-mes-header';
+      header.innerHTML = `
+        <span>${label}</span>
+        <span class="lanc-mes-total ${totalMes >= 0 ? '' : 'neg'}">${formatBRL(totalMes)}</span>`;
+      section.appendChild(header);
+
+      // Tabela de lançamentos
+      const table = document.createElement('table');
+      table.className = 'lanc-detail-table';
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Filial</th>
+            <th>BU</th>
+            <th>Natureza</th>
+            <th>Débito</th>
+            <th>Crédito</th>
+            <th>Valor DRE</th>
+          </tr>
+        </thead>`;
+
+      const tbody = document.createElement('tbody');
+      lancamentos.forEach(r => {
+        const tr = document.createElement('tr');
+        const dataFmt = r._date.toLocaleDateString('pt-BR');
+        const deb  = parseFloat(r.VALOR_DEBITO)  || 0;
+        const cred = parseFloat(r.VALOR_CREDITO) || 0;
+        const v    = r._dreVal;
+        tr.innerHTML = `
+          <td>${dataFmt}</td>
+          <td>${r.FILIAL_NOME || '—'}</td>
+          <td>${r.BU         || '—'}</td>
+          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+              title="${(r.NATUREZA || '').replace(/"/g, '&quot;')}">${r.NATUREZA || '—'}</td>
+          <td class="col-val ${deb  ? 'neg' : ''}">${deb  ? formatBRL(deb)  : '—'}</td>
+          <td class="col-val ${cred ? 'pos' : ''}">${cred ? formatBRL(cred) : '—'}</td>
+          <td class="col-val ${v >= 0 ? 'pos' : 'neg'}">${formatBRL(v)}</td>`;
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      section.appendChild(table);
+      body.appendChild(section);
+    });
+  }
+
+  overlay.style.display = 'flex';
+}
+
+// Fechar modal
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('lancModalOverlay');
+  document.getElementById('lancModalClose')?.addEventListener('click', () => {
+    overlay.style.display = 'none';
+  });
+  overlay?.addEventListener('click', e => {
+    if (e.target === overlay) overlay.style.display = 'none';
+  });
+});
 
 // ── DASHBOARD ────────────────────────────────────────────────
 

@@ -82,20 +82,12 @@ async function initAuth() {
 
 function injectUserBar(user) {
   const tryInject = () => {
-    const actions = document.getElementById('headerActions');
-    if (!actions) { setTimeout(tryInject, 100); return; }
+    const slot = document.getElementById('header-user');
+    if (!slot) { setTimeout(tryInject, 100); return; }
 
-    // Forçar visibilidade do header-actions para mostrar barra de usuário
-    // mesmo antes de carregar arquivo
-    const bar = document.createElement('div');
-    bar.id = 'user-bar';
-    bar.style.cssText = `
-      display:flex;align-items:center;gap:.5rem;
-      font-size:.78rem;color:rgba(255,255,255,.85);
-      position:absolute;top:50%;right:1.5rem;transform:translateY(-50%);
-    `;
-    bar.innerHTML = `
-      <span style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+    slot.innerHTML = `
+      <span style="font-size:.78rem;color:rgba(255,255,255,.85);
+                   max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
         ${user.email}
       </span>
       <a href="/index.html"
@@ -110,12 +102,6 @@ function injectUserBar(user) {
                cursor:pointer;font-size:.75rem;font-weight:600;">
         Sair
       </button>`;
-
-    const header = document.querySelector('.header-inner');
-    if (header) {
-      header.style.position = 'relative';
-      header.appendChild(bar);
-    }
 
     document.getElementById('btn-logout-dre')?.addEventListener('click', async () => {
       await db.auth.signOut();
