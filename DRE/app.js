@@ -917,7 +917,7 @@ function abrirModalLancamentos(conta, descConta) {
         tr.innerHTML = `
           <td>${dataFmt}</td>
           <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-              title="${(r.NATUREZA || '').replace(/"/g, '&quot;')}">${r.NATUREZA || '—'}</td>
+              title="${(r.HISTORICO || '').replace(/"/g, '&quot;')}">${r.HISTORICO || '—'}</td>
           <td>${r.BU || '—'}</td>
           <td class="col-val ${saldo >= 0 ? 'pos' : 'neg'}">${formatBRL(saldo)}</td>
           <td class="col-val ${v >= 0 ? 'pos' : 'neg'}">${formatBRL(v)}</td>`;
