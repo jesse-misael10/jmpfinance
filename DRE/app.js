@@ -123,9 +123,10 @@ let dadosBrutos = [];
 let modoVisualizacao = 'monthly';
 let filtroFilial = new Set();   // Set vazio = sem filtro (todos)
 let filtroBU     = new Set();
-let abaPrincipal = 'dre';       // 'dre' | 'bp'
-let chartEvolucao = null;
-let chartComparativo = null;
+let abaPrincipal = 'dre';       // 'dre' | 'bp' | 'dashboard'
+let dashPeriodo  = null;        // null = Acumulado; string = período selecionado
+let chartDash1   = null;
+let chartDash2   = null;
 
 // ── LEITURA DO ARQUIVO ───────────────────────────────────────
 
@@ -194,9 +195,8 @@ function inicializarDashboard(nomeArquivo, rows) {
     document.getElementById('footerTimestamp').textContent =
       'Gerado em ' + new Date().toLocaleString('pt-BR');
 
-    if (temBP) {
-      document.getElementById('tabNav').style.display = 'flex';
-    }
+    document.getElementById('tabNav').style.display = 'flex';
+    document.getElementById('tabBtnBP').style.display = temBP ? '' : 'none';
 
     abaPrincipal = 'dre';
     renderizar();
@@ -345,14 +345,18 @@ document.getElementById('viewToggle').addEventListener('click', e => {
 
 document.getElementById('btnExportCSV').addEventListener('click', exportarCSV);
 document.getElementById('btnNewFile').addEventListener('click', () => {
-  dadosBrutos = [];
+  dadosBrutos  = [];
   filtroFilial = new Set();
   filtroBU     = new Set();
-  CloudStorage.remove('dados_brutos').catch(() => {});
   abaPrincipal = 'dre';
-  document.getElementById('tabNav').style.display = 'none';
-  document.getElementById('dreSection').style.display = 'block';
-  document.getElementById('bpSection').style.display  = 'none';
+  dashPeriodo  = null;
+  if (chartDash1) { chartDash1.destroy(); chartDash1 = null; }
+  if (chartDash2) { chartDash2.destroy(); chartDash2 = null; }
+  CloudStorage.remove('dados_brutos').catch(() => {});
+  document.getElementById('tabNav').style.display  = 'none';
+  document.getElementById('dreSection').style.display  = 'block';
+  document.getElementById('dashSection').style.display = 'none';
+  document.getElementById('bpSection').style.display   = 'none';
   document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('headerActions').style.display = 'none';
@@ -372,8 +376,9 @@ document.getElementById('tabNav').addEventListener('click', e => {
   if (aba === abaPrincipal) return;
   abaPrincipal = aba;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === aba));
-  document.getElementById('dreSection').style.display = aba === 'dre' ? 'block' : 'none';
-  document.getElementById('bpSection').style.display  = aba === 'bp'  ? 'block' : 'none';
+  document.getElementById('dreSection').style.display  = aba === 'dre'       ? 'block' : 'none';
+  document.getElementById('dashSection').style.display = aba === 'dashboard' ? 'block' : 'none';
+  document.getElementById('bpSection').style.display   = aba === 'bp'        ? 'block' : 'none';
   renderizar();
 });
 
@@ -493,11 +498,13 @@ function renderizar() {
 
   if (abaPrincipal === 'bp') {
     renderizarBalancete();
+  } else if (abaPrincipal === 'dashboard') {
+    const { periodos, calculado, total } = processarDRE(dadosBrutos, filtroFilial, filtroBU, modoVisualizacao);
+    renderizarDashboard(periodos, calculado, total);
   } else {
     const { periodos, calculado, total } = processarDRE(dadosBrutos, filtroFilial, filtroBU, modoVisualizacao);
     renderizarKPIs(total, periodos);
     renderizarTabela(periodos, calculado, total);
-    renderizarGraficos(periodos, calculado);
   }
 }
 
@@ -573,16 +580,21 @@ function renderizarTabela(periodos, calculado, total) {
     }
 
     // Marcar como clicável se tiver drill-down
-    if (DRILL_MAPA[linha.id]) {
+    const isDrillable = !!DRILL_MAPA[linha.id];
+    if (isDrillable) {
       tr.classList.add('row-drillable');
       tr.dataset.linhaId     = linha.id;
       tr.dataset.linhaLabel  = linha.label;
       tr.dataset.linhaPrefix = linha.prefix;
     }
 
-    // Célula prefixo
+    // Célula prefixo (com ícone toggle para drillable)
     const tdPfx = document.createElement('td');
-    tdPfx.textContent = linha.prefix;
+    if (isDrillable) {
+      tdPfx.innerHTML = `<span class="dre-drill-icon">▶</span> ${linha.prefix}`;
+    } else {
+      tdPfx.textContent = linha.prefix;
+    }
     tr.appendChild(tdPfx);
 
     // Célula descrição
@@ -611,14 +623,28 @@ function renderizarTabela(periodos, calculado, total) {
     tbody.appendChild(tr);
   });
 
-  // Delegação de click para drill-down
+  // Delegação de click para drill-down inline
   tbody.addEventListener('click', e => {
     const tr = e.target.closest('tr.row-drillable');
-    if (tr) abrirDrillDown(tr.dataset.linhaId, tr.dataset.linhaLabel, tr.dataset.linhaPrefix);
+    if (!tr) return;
+    const next = tr.nextElementSibling;
+    if (next && next.classList.contains('dre-inline-detail')) {
+      next.remove();
+      tr.classList.remove('is-open');
+      return;
+    }
+    tr.classList.add('is-open');
+    const trDetail = document.createElement('tr');
+    trDetail.className = 'dre-inline-detail';
+    const td = document.createElement('td');
+    td.colSpan = numCols;
+    construirDetalheInline(td, tr.dataset.linhaId, tr.dataset.linhaLabel, tr.dataset.linhaPrefix);
+    trDetail.appendChild(td);
+    tr.insertAdjacentElement('afterend', trDetail);
   });
 }
 
-// ── GRÁFICOS ─────────────────────────────────────────────────
+// ── CORES / UTILITÁRIOS DE GRÁFICO ──────────────────────────
 
 const CORES = {
   azul:       'rgba(37, 99, 235, .85)',
@@ -632,86 +658,6 @@ const CORES = {
 };
 
 function corSinal(valor, pos, neg) { return valor >= 0 ? pos : neg; }
-
-function renderizarGraficos(periodos, calculado) {
-  const labels   = periodos.map(p => labelPeriodo(p, modoVisualizacao));
-  const ebitda   = periodos.map(p => calculado[p]?.ebitda        || 0);
-  const ll       = periodos.map(p => calculado[p]?.lucro_liquido || 0);
-  const receita  = periodos.map(p => calculado[p]?.receita_bruta || 0);
-  const lucroBruto = periodos.map(p => calculado[p]?.lucro_bruto || 0);
-
-  // ── Gráfico 1: EBITDA (barras) + Lucro Líquido (linha) ──
-  if (chartEvolucao) chartEvolucao.destroy();
-  const ctx1 = document.getElementById('chartEvolution').getContext('2d');
-
-  chartEvolucao = new Chart(ctx1, {
-    data: {
-      labels,
-      datasets: [
-        {
-          type: 'bar',
-          label: 'EBITDA',
-          data: ebitda,
-          backgroundColor: ebitda.map(v => corSinal(v, CORES.ambar, CORES.vermelho)),
-          borderRadius: 5,
-          yAxisID: 'y',
-          order: 2,
-        },
-        {
-          type: 'line',
-          label: 'Lucro Líquido',
-          data: ll,
-          borderColor: '#059669',
-          backgroundColor: CORES.verdeLt,
-          borderWidth: 2.5,
-          pointRadius: 6,
-          pointBackgroundColor: ll.map(v => corSinal(v, '#059669', '#dc2626')),
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          tension: 0.35,
-          fill: false,
-          yAxisID: 'y',
-          order: 1,
-        },
-      ],
-    },
-    options: opcoesGrafico({
-      tooltip: ctx => `${ctx.dataset.label}: ${formatBRL(ctx.raw)}`,
-      tickY: v => formatBRLCurto(v),
-    }),
-  });
-
-  // ── Gráfico 2: Comparativo de métricas por período ──
-  if (chartComparativo) chartComparativo.destroy();
-  const ctx2 = document.getElementById('chartComparison').getContext('2d');
-
-  chartComparativo = new Chart(ctx2, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Receita Bruta',  data: receita,   backgroundColor: CORES.azul,    borderRadius: 4 },
-        { label: 'Lucro Bruto',    data: lucroBruto, backgroundColor: CORES.roxo,    borderRadius: 4 },
-        {
-          label: 'EBITDA',
-          data: ebitda,
-          backgroundColor: ebitda.map(v => corSinal(v, CORES.ambar, CORES.vermelho)),
-          borderRadius: 4,
-        },
-        {
-          label: 'Lucro Líquido',
-          data: ll,
-          backgroundColor: ll.map(v => corSinal(v, CORES.verde, CORES.vermelho)),
-          borderRadius: 4,
-        },
-      ],
-    },
-    options: opcoesGrafico({
-      tooltip: ctx => `${ctx.dataset.label}: ${formatBRL(ctx.raw)}`,
-      tickY: v => formatBRLCurto(v),
-    }),
-  });
-}
 
 function opcoesGrafico({ tooltip, tickY }) {
   return {
@@ -738,6 +684,272 @@ function opcoesGrafico({ tooltip, tickY }) {
       },
     },
   };
+}
+
+// ── DRILL-DOWN INLINE (DRE) ──────────────────────────────────
+
+function getLancamentosDREInline(linhaId) {
+  const categorias = DRILL_MAPA[linhaId] || [];
+  return dadosBrutos
+    .filter(r => {
+      if (!r.CONTA || !r.DATA) return false;
+      if (filtroFilial.size > 0 && !filtroFilial.has(r.FILIAL_NOME)) return false;
+      if (filtroBU.size     > 0 && !filtroBU.has(r.BU))             return false;
+      return categorias.includes(classificarConta(r.CONTA));
+    })
+    .map(r => {
+      const d = extrairData(r.DATA);
+      let saldo = parseFloat(r.SALDO);
+      if (isNaN(saldo)) saldo = (parseFloat(r.VALOR_DEBITO) || 0) - (parseFloat(r.VALOR_CREDITO) || 0);
+      return {
+        data:      d,
+        filial:    r.FILIAL_NOME || '',
+        bu:        r.BU || '',
+        conta:     String(r.CONTA || ''),
+        descConta: r.DESC_CONTA || '',
+        historico: r.HISTORICO || '',
+        dreVal:    -saldo,
+      };
+    })
+    .sort((a, b) => a.conta.localeCompare(b.conta));
+}
+
+function construirDetalheInline(td, linhaId, linhaLabel, linhaPrefix) {
+  const lancamentos = getLancamentosDREInline(linhaId);
+
+  // Agrupar por conta
+  const grupos = {};
+  lancamentos.forEach(l => {
+    if (!grupos[l.conta]) grupos[l.conta] = { conta: l.conta, descConta: l.descConta, items: [], subtotal: 0 };
+    grupos[l.conta].items.push(l);
+    grupos[l.conta].subtotal += l.dreVal;
+  });
+
+  const totalGeral = lancamentos.reduce((s, l) => s + l.dreVal, 0);
+  const numContas  = Object.keys(grupos).length;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'idw-wrap';
+
+  const hdr = document.createElement('div');
+  hdr.className = 'idw-hdr';
+  hdr.innerHTML =
+    `<span class="idw-title">${linhaPrefix} ${linhaLabel}</span>` +
+    `<span class="idw-meta">${lancamentos.length} lançamento(s) · ${numContas} conta(s)</span>` +
+    `<span class="idw-total ${totalGeral >= 0 ? 'val-pos' : 'val-neg'}">${formatBRL(totalGeral)}</span>`;
+  wrap.appendChild(hdr);
+
+  if (!lancamentos.length) {
+    const p = document.createElement('p');
+    p.className = 'idw-empty';
+    p.textContent = 'Nenhum lançamento encontrado para os filtros selecionados.';
+    wrap.appendChild(p);
+    td.appendChild(wrap);
+    return;
+  }
+
+  const tbl = document.createElement('table');
+  tbl.className = 'idw-table';
+  tbl.innerHTML =
+    '<thead><tr><th></th><th>Conta</th><th>Descrição</th>' +
+    '<th class="idw-num">Lançamentos</th><th class="idw-num">Subtotal</th></tr></thead>';
+  const tbody2 = document.createElement('tbody');
+
+  Object.values(grupos).forEach(grupo => {
+    const trG = document.createElement('tr');
+    trG.className = 'idw-group';
+
+    const tdTog = document.createElement('td');
+    tdTog.innerHTML = '<span class="dd-toggle-icon">▶</span>';
+    const tdConta = document.createElement('td');
+    tdConta.style.fontFamily = 'monospace';
+    tdConta.textContent = grupo.conta;
+    const tdDesc = document.createElement('td');
+    tdDesc.textContent = grupo.descConta;
+    const tdCnt = document.createElement('td');
+    tdCnt.className = 'idw-num';
+    tdCnt.textContent = grupo.items.length;
+    const tdSub = document.createElement('td');
+    tdSub.className = `idw-num ${grupo.subtotal >= 0 ? 'val-pos' : 'val-neg'}`;
+    tdSub.textContent = formatBRL(grupo.subtotal);
+
+    trG.append(tdTog, tdConta, tdDesc, tdCnt, tdSub);
+    tbody2.appendChild(trG);
+
+    const itemRows = grupo.items.map(l => {
+      const tr = document.createElement('tr');
+      tr.className = 'idw-item';
+      const dataStr = l.data ? l.data.toLocaleDateString('pt-BR') : '—';
+      tr.innerHTML =
+        `<td></td>` +
+        `<td class="idw-date">${dataStr}</td>` +
+        `<td class="idw-empresa">${l.filial}${l.bu ? ` <span class="dd-bu-badge">${l.bu}</span>` : ''}</td>` +
+        `<td colspan="1" class="idw-hist" title="${l.historico.replace(/"/g,'&quot;')}">${l.historico || '—'}</td>` +
+        `<td class="idw-num ${l.dreVal >= 0 ? 'val-pos' : 'val-neg'}">${formatBRL(l.dreVal)}</td>`;
+      tbody2.appendChild(tr);
+      return tr;
+    });
+
+    trG.addEventListener('click', () => {
+      const open = trG.classList.toggle('is-open');
+      itemRows.forEach(r => r.classList.toggle('visible', open));
+    });
+  });
+
+  tbl.appendChild(tbody2);
+  wrap.appendChild(tbl);
+  td.appendChild(wrap);
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────
+
+function renderizarDashboard(periodos, calculado, total) {
+  // Period selector
+  const bar = document.getElementById('dashPeriodBar');
+  bar.innerHTML = '';
+
+  const criarBtnPeriodo = (chave, label) => {
+    const btn = document.createElement('button');
+    btn.className = `dash-pb${dashPeriodo === chave ? ' active' : ''}`;
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      dashPeriodo = chave;
+      renderizarDashboard(periodos, calculado, total);
+    });
+    return btn;
+  };
+
+  bar.appendChild(criarBtnPeriodo(null, 'Acumulado'));
+  periodos.forEach(p => bar.appendChild(criarBtnPeriodo(p, labelPeriodo(p, modoVisualizacao))));
+
+  // Dados do período selecionado
+  const dados = dashPeriodo ? (calculado[dashPeriodo] || {}) : total;
+  const rb = dados.receita_bruta    || 0;
+  const lb = dados.lucro_bruto      || 0;
+  const eb = dados.ebitda           || 0;
+  const ll = dados.lucro_liquido    || 0;
+
+  const setDashKPI = (valId, val, metaId, metaText) => {
+    const el = document.getElementById(valId);
+    el.textContent = formatBRL(val);
+    el.className = `kpi-value ${val >= 0 ? 'val-pos' : 'val-neg'}`;
+    if (metaId) document.getElementById(metaId).textContent = metaText;
+  };
+
+  setDashKPI('dashKpiRBVal', rb, 'dashKpiRBMeta',
+    dashPeriodo ? labelPeriodo(dashPeriodo, modoVisualizacao) : `${periodos.length} período(s)`);
+  setDashKPI('dashKpiLBVal', lb, 'dashKpiLBMeta', `Margem: ${pct(lb, rb)}`);
+  setDashKPI('dashKpiEBVal', eb, 'dashKpiEBMeta', `Margem: ${pct(eb, rb)}`);
+  setDashKPI('dashKpiLLVal', ll, 'dashKpiLLMeta', `Margem: ${pct(ll, rb)}`);
+
+  const margEB = rb ? (eb / rb) * 100 : 0;
+  const elMEB = document.getElementById('dashKpiMEBVal');
+  elMEB.textContent = isNaN(margEB) ? '—' : margEB.toFixed(1) + '%';
+  elMEB.className   = `kpi-value ${margEB >= 0 ? 'val-pos' : 'val-neg'}`;
+  document.getElementById('dashKpiMEBMeta').textContent = '% sobre Receita';
+
+  // Gráfico 1: Evolução EBITDA (barras) + Lucro Líquido (linha)
+  const labels2     = periodos.map(p => labelPeriodo(p, modoVisualizacao));
+  const ebitdaArr   = periodos.map(p => calculado[p]?.ebitda        || 0);
+  const llArr       = periodos.map(p => calculado[p]?.lucro_liquido || 0);
+
+  if (chartDash1) chartDash1.destroy();
+  chartDash1 = new Chart(document.getElementById('dashChart1').getContext('2d'), {
+    data: {
+      labels: labels2,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'EBITDA',
+          data: ebitdaArr,
+          backgroundColor: ebitdaArr.map(v => corSinal(v, CORES.ambar, CORES.vermelho)),
+          borderRadius: 5,
+          order: 2,
+        },
+        {
+          type: 'line',
+          label: 'Lucro Líquido',
+          data: llArr,
+          borderColor: '#059669',
+          backgroundColor: CORES.verdeLt,
+          borderWidth: 2.5,
+          pointRadius: 5,
+          pointBackgroundColor: llArr.map(v => corSinal(v, '#059669', '#dc2626')),
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          tension: 0.35,
+          fill: false,
+          order: 1,
+        },
+      ],
+    },
+    options: opcoesGrafico({
+      tooltip: ctx => `${ctx.dataset.label}: ${formatBRL(ctx.raw)}`,
+      tickY: v => formatBRLCurto(v),
+    }),
+  });
+
+  // Gráfico 2: Margens %
+  const margBrutaArr = periodos.map(p => {
+    const c = calculado[p] || {};
+    return c.receita_bruta ? (c.lucro_bruto / c.receita_bruta) * 100 : 0;
+  });
+  const margEBArr = periodos.map(p => {
+    const c = calculado[p] || {};
+    return c.receita_bruta ? (c.ebitda / c.receita_bruta) * 100 : 0;
+  });
+  const margLLArr = periodos.map(p => {
+    const c = calculado[p] || {};
+    return c.receita_bruta ? (c.lucro_liquido / c.receita_bruta) * 100 : 0;
+  });
+
+  if (chartDash2) chartDash2.destroy();
+  chartDash2 = new Chart(document.getElementById('dashChart2').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: labels2,
+      datasets: [
+        { label: 'Margem Bruta',   data: margBrutaArr, borderColor: CORES.azul,    backgroundColor: CORES.azulLt,   borderWidth: 2.5, pointRadius: 4, tension: 0.35, fill: false },
+        { label: 'Margem EBITDA',  data: margEBArr,    borderColor: CORES.ambar,   backgroundColor: 'transparent',  borderWidth: 2.5, pointRadius: 4, tension: 0.35, fill: false },
+        { label: 'Margem LL',      data: margLLArr,    borderColor: CORES.verde,   backgroundColor: CORES.verdeLt,  borderWidth: 2.5, pointRadius: 4, tension: 0.35, fill: false },
+      ],
+    },
+    options: opcoesGrafico({
+      tooltip: ctx => `${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`,
+      tickY: v => v.toFixed(1) + '%',
+    }),
+  });
+
+  // Barras de composição de despesas (período selecionado)
+  const barsEl = document.getElementById('dashDespBars');
+  barsEl.innerHTML = '';
+  document.getElementById('dashDespPeriodoLabel').textContent =
+    dashPeriodo ? labelPeriodo(dashPeriodo, modoVisualizacao) : 'Acumulado';
+
+  const despesas = [
+    { label: 'Despesas com Vendas',        val: Math.abs(dados.despesas_vendas  || 0), cor: '#2563eb' },
+    { label: 'Despesas com Pessoal',       val: Math.abs(dados.despesas_pessoal || 0), cor: '#7c3aed' },
+    { label: 'Despesas Administrativas',   val: Math.abs(dados.despesas_admin   || 0), cor: '#d97706' },
+    { label: 'Depreciação',                val: Math.abs(dados.depreciacao      || 0), cor: '#64748b' },
+    { label: 'CMV / CPV',                  val: Math.abs(dados.cmv              || 0), cor: '#dc2626' },
+  ].filter(d => d.val > 0);
+
+  const maxDesp = Math.max(...despesas.map(d => d.val), 1);
+
+  despesas.sort((a, b) => b.val - a.val).forEach(d => {
+    const pctWidth = (d.val / maxDesp) * 100;
+    const row = document.createElement('div');
+    row.className = 'desp-bar-row';
+    row.innerHTML =
+      `<span class="desp-bar-label">${d.label}</span>` +
+      `<div class="desp-bar-track"><div class="desp-bar-fill" style="width:${pctWidth}%;background:${d.cor}"></div></div>` +
+      `<span class="desp-bar-val">${formatBRL(d.val)}</span>`;
+    barsEl.appendChild(row);
+  });
+
+  if (!despesas.length) {
+    barsEl.innerHTML = '<p style="color:var(--c-muted);font-size:.85rem;padding:.5rem 0">Sem despesas no período.</p>';
+  }
 }
 
 // ── FORMATAÇÃO ───────────────────────────────────────────────

@@ -55,10 +55,11 @@
     <!-- DASHBOARD (oculto até carregar arquivo) -->
     <div class="dashboard" id="dashboard" style="display:none">
 
-      <!-- TAB NAV (visível quando há dados de Ativo/Passivo) -->
+      <!-- TAB NAV -->
       <nav class="tab-nav" id="tabNav" style="display:none">
         <button class="tab-btn active" data-tab="dre">📊 DRE</button>
-        <button class="tab-btn"        data-tab="bp" >📋 Balancete</button>
+        <button class="tab-btn"        data-tab="dashboard">📈 Dashboard</button>
+        <button class="tab-btn"        data-tab="bp" id="tabBtnBP" style="display:none">📋 Balancete</button>
       </nav>
 
       <!-- FILTROS -->
@@ -125,31 +126,79 @@
         </div>
       </section>
 
-      <!-- CHARTS -->
-      <section class="charts-section">
-        <div class="charts-grid">
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <h3>Evolução EBITDA &amp; Lucro Líquido</h3>
-              <span class="chart-hint">Barras = EBITDA · Linha = Lucro Líquido</span>
-            </div>
-            <div class="chart-wrapper">
-              <canvas id="chartEvolution"></canvas>
-            </div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <h3>Comparativo de Resultados por Período</h3>
-              <span class="chart-hint">Receita Bruta · Lucro Bruto · EBITDA · Lucro Líquido</span>
-            </div>
-            <div class="chart-wrapper">
-              <canvas id="chartComparison"></canvas>
-            </div>
-          </div>
-        </div>
-      </section>
-
       </div><!-- /dreSection -->
+
+      <!-- ── DASHBOARD ─────────────────────── -->
+      <div id="dashSection" style="display:none">
+
+        <section class="dash-period-section">
+          <div class="dash-period-bar" id="dashPeriodBar"></div>
+        </section>
+
+        <section class="kpis-section">
+          <div class="kpis-grid dash-kpis-grid">
+            <div class="kpi-card kpi-receita">
+              <div class="kpi-label">Receita Bruta</div>
+              <div class="kpi-value" id="dashKpiRBVal">—</div>
+              <div class="kpi-meta" id="dashKpiRBMeta"></div>
+            </div>
+            <div class="kpi-card kpi-lb">
+              <div class="kpi-label">Lucro Bruto</div>
+              <div class="kpi-value" id="dashKpiLBVal">—</div>
+              <div class="kpi-meta" id="dashKpiLBMeta">Margem: —</div>
+            </div>
+            <div class="kpi-card kpi-ebitda">
+              <div class="kpi-label">EBITDA</div>
+              <div class="kpi-value" id="dashKpiEBVal">—</div>
+              <div class="kpi-meta" id="dashKpiEBMeta">Margem: —</div>
+            </div>
+            <div class="kpi-card kpi-ll">
+              <div class="kpi-label">Lucro Líquido</div>
+              <div class="kpi-value" id="dashKpiLLVal">—</div>
+              <div class="kpi-meta" id="dashKpiLLMeta">Margem: —</div>
+            </div>
+            <div class="kpi-card kpi-margem">
+              <div class="kpi-label">Margem EBITDA</div>
+              <div class="kpi-value" id="dashKpiMEBVal">—</div>
+              <div class="kpi-meta" id="dashKpiMEBMeta">% sobre Receita</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="dash-charts-section">
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Evolução por Período</h3>
+                <span class="chart-hint">Barras = EBITDA · Linha = Lucro Líquido</span>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="dashChart1"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Margens (%)</h3>
+                <span class="chart-hint">Margem Bruta · EBITDA · Lucro Líquido</span>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="dashChart2"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="dash-despesas-section">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3>Composição de Despesas</h3>
+              <span class="chart-hint" id="dashDespPeriodoLabel"></span>
+            </div>
+            <div class="dash-despesas-bars" id="dashDespBars"></div>
+          </div>
+        </section>
+
+      </div><!-- /dashSection -->
 
       <!-- ── BALANCETE ──────────────────────── -->
       <div id="bpSection" style="display:none">

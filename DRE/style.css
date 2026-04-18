@@ -589,16 +589,10 @@ body {
 
 /* Drill-down indicator on DRE rows */
 .row-drillable { cursor: pointer; }
-.row-drillable td:nth-child(2)::after {
-  content: ' ⤵';
-  font-size: .65rem;
-  color: var(--c-blue);
-  opacity: 0;
-  transition: opacity .15s;
-}
-.row-drillable:hover td:nth-child(2)::after { opacity: .75; }
 .row-drillable:hover td { background: #eef3fd !important; }
 .row-highlight.row-drillable:hover td { background: #162f52 !important; }
+.row-drillable.is-open td { background: #dbeafe !important; }
+.row-highlight.row-drillable.is-open td { background: #162f52 !important; }
 
 /* ============================================================
    DRILL-DOWN DRAWER
@@ -1065,3 +1059,216 @@ body {
   border-top: 2px dashed #fde68a;
 }
 .row-bp-check.balanced td { background: #f0fdf4; color: var(--c-green); }
+
+/* ============================================================
+   DRE — DRILL-DOWN INLINE
+   ============================================================ */
+
+.dre-drill-icon {
+  display: inline-block;
+  font-size: .6rem;
+  color: var(--c-blue);
+  transition: transform .15s;
+  margin-right: .25rem;
+}
+.row-drillable.is-open .dre-drill-icon { transform: rotate(90deg); }
+
+/* Detail row container */
+.dre-inline-detail td {
+  padding: 0 !important;
+  background: #f0f5ff !important;
+  border-bottom: 2px solid var(--c-blue) !important;
+}
+
+/* Inner wrapper */
+.idw-wrap {
+  padding: 1rem 1.25rem 1.25rem;
+  border-left: 4px solid var(--c-blue);
+  margin: 0;
+}
+
+.idw-hdr {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: .85rem;
+  flex-wrap: wrap;
+}
+
+.idw-title {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--c-navy-md);
+}
+
+.idw-meta {
+  font-size: .78rem;
+  color: var(--c-muted);
+}
+
+.idw-total {
+  margin-left: auto;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.idw-empty {
+  color: var(--c-light);
+  font-style: italic;
+  font-size: .85rem;
+  padding: .5rem 0;
+}
+
+.idw-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.idw-table thead th {
+  background: var(--c-navy-md);
+  color: rgba(255,255,255,.85);
+  padding: .5rem .85rem;
+  text-align: left;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+.idw-table thead th.idw-num { text-align: right; }
+
+/* Group rows */
+.idw-group {
+  cursor: pointer;
+  background: #f8fafc;
+  user-select: none;
+}
+.idw-group:hover td { background: #eef3fd !important; }
+.idw-group td {
+  padding: .52rem .85rem;
+  border-bottom: 1px solid var(--c-border);
+  font-weight: 700;
+  color: var(--c-navy-md);
+  font-size: .81rem;
+}
+.idw-group.is-open .dd-toggle-icon { transform: rotate(90deg); }
+
+/* Item rows */
+.idw-item { display: none; }
+.idw-item.visible { display: table-row; }
+.idw-item td {
+  padding: .38rem .85rem .38rem 2rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: .79rem;
+  color: var(--c-text);
+}
+.idw-item:hover td { background: #f8fafc; }
+.idw-num { text-align: right; }
+
+.idw-date    { white-space: nowrap; color: var(--c-muted); font-size: .76rem; }
+.idw-empresa { max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .76rem; }
+.idw-hist    { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--c-muted); }
+
+/* ============================================================
+   DASHBOARD TAB
+   ============================================================ */
+
+.dash-period-section {
+  margin-bottom: 1.25rem;
+}
+
+.dash-period-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.dash-pb {
+  padding: .38rem 1rem;
+  border: 1.5px solid var(--c-border-md);
+  border-radius: 20px;
+  background: #fff;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--c-muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.dash-pb:hover { border-color: var(--c-blue); color: var(--c-blue); }
+.dash-pb.active {
+  background: var(--c-blue);
+  border-color: var(--c-blue);
+  color: #fff;
+}
+
+/* 5-column KPI grid for dashboard */
+.dash-kpis-grid {
+  grid-template-columns: repeat(5, 1fr) !important;
+}
+.kpi-margem { border-top-color: #64748b; }
+
+.dash-charts-section { margin-bottom: 1.5rem; }
+
+.dash-despesas-section { margin-bottom: 2rem; }
+.dash-despesas-section .chart-card { padding: 1.25rem 1.5rem; }
+
+.dash-despesas-bars {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding-top: .25rem;
+}
+
+.desp-bar-row {
+  display: grid;
+  grid-template-columns: 220px 1fr 130px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.desp-bar-label {
+  font-size: .82rem;
+  color: var(--c-text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.desp-bar-track {
+  height: 20px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.desp-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .4s ease;
+  min-width: 2px;
+}
+
+.desp-bar-val {
+  text-align: right;
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--c-text);
+  white-space: nowrap;
+}
+
+@media (max-width: 1300px) {
+  .dash-kpis-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+@media (max-width: 900px) {
+  .dash-kpis-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .desp-bar-row { grid-template-columns: 160px 1fr 100px; }
+}
+@media (max-width: 600px) {
+  .dash-kpis-grid { grid-template-columns: 1fr !important; }
+  .desp-bar-row { grid-template-columns: 1fr; }
+  .desp-bar-label { overflow: visible; white-space: normal; }
+}
