@@ -1073,50 +1073,27 @@ body {
 }
 .row-drillable.is-open .dre-drill-icon { transform: rotate(90deg); }
 
-/* Detail row container */
-.dre-inline-detail td {
-  padding: 0 !important;
-  background: #f0f5ff !important;
-  border-bottom: 2px solid var(--c-blue) !important;
-}
+/* Linhas de detalhe inseridas diretamente no tbody da DRE */
 
-/* Inner wrapper */
-.idw-wrap {
-  padding: .75rem 1rem 1rem;
-  border-left: 4px solid var(--c-blue);
-}
-
-.idw-empty {
-  color: var(--c-light);
-  font-style: italic;
-  font-size: .85rem;
-  padding: .5rem 0;
-}
-
-/* Sub-table reutiliza .dre-table + estilos específicos */
-.idw-table.dre-table {
-  min-width: unset;
-  font-size: .8rem;
-}
-
-/* Linha de conta individual */
+/* Conta individual */
 .idw-conta-row td {
-  background: #f8faff;
+  background: #eef3fd !important;
   font-size: .8rem;
+  border-bottom: 1px solid #c7d8f5 !important;
 }
-.idw-conta-row td:first-child { text-align: left; width: auto; min-width: 110px; }
-.idw-conta-row td:nth-child(2) { min-width: 180px; }
-.idw-conta-row:hover td { background: #eef3fd !important; }
+.idw-conta-row td:nth-child(2) { padding-left: 3rem; color: var(--c-muted); }
+.idw-conta-row:hover td { background: #dbeafe !important; }
 
 /* Linha de total do sub-grupo */
 .idw-total-row td {
-  background: #dbeafe;
+  background: #dbeafe !important;
   font-weight: 700;
   font-size: .82rem;
-  border-top: 2px solid #93c5fd;
-  color: var(--c-navy-md);
+  border-top: 2px solid #93c5fd !important;
+  border-bottom: 2px solid #93c5fd !important;
+  color: var(--c-navy-md) !important;
 }
-.idw-total-row td:first-child { text-align: left; padding-left: 1rem; }
+.idw-total-row td:nth-child(2) { padding-left: 3rem; }
 
 /* ============================================================
    DASHBOARD TAB

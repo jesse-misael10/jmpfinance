@@ -627,20 +627,26 @@ function renderizarTabela(periodos, calculado, total) {
   tbody.addEventListener('click', e => {
     const tr = e.target.closest('tr.row-drillable');
     if (!tr) return;
+
+    // Se já está aberto, remove todas as linhas de detalhe
     const next = tr.nextElementSibling;
     if (next && next.classList.contains('dre-inline-detail')) {
-      next.remove();
+      let curr = next;
+      while (curr && curr.classList.contains('dre-inline-detail')) {
+        const rem = curr;
+        curr = curr.nextElementSibling;
+        rem.remove();
+      }
       tr.classList.remove('is-open');
       return;
     }
+
     tr.classList.add('is-open');
-    const trDetail = document.createElement('tr');
-    trDetail.className = 'dre-inline-detail';
-    const td = document.createElement('td');
-    td.colSpan = numCols;
-    construirDetalheInline(td, tr.dataset.linhaId, tr.dataset.linhaLabel, tr.dataset.linhaPrefix, periodos, calculado, total);
-    trDetail.appendChild(td);
-    tr.insertAdjacentElement('afterend', trDetail);
+    const linhas = construirLinhasDetalhe(
+      tr.dataset.linhaId, tr.dataset.linhaLabel, periodos, calculado, total
+    );
+    let ref = tr;
+    linhas.forEach(r => { ref.insertAdjacentElement('afterend', r); ref = r; });
   });
 }
 
@@ -721,99 +727,62 @@ function agregarContasPorPeriodo(linhaId) {
   return contasMapa;
 }
 
-function construirDetalheInline(td, linhaId, linhaLabel, linhaPrefix, periodos, calculado, total) {
+/**
+ * Retorna array de <tr> para inserir diretamente no tbody da tabela DRE.
+ * Mesma estrutura de colunas: prefixo | descrição | (R$ + AV%) × (períodos + total)
+ */
+function construirLinhasDetalhe(linhaId, linhaLabel, periodos, calculado, total) {
   const contasMapa = agregarContasPorPeriodo(linhaId);
   const contas     = Object.values(contasMapa).sort((a, b) => a.conta.localeCompare(b.conta));
+  if (!contas.length) return [];
 
-  const wrap = document.createElement('div');
-  wrap.className = 'idw-wrap';
-
-  if (!contas.length) {
-    wrap.innerHTML = '<p class="idw-empty">Nenhum dado encontrado para os filtros selecionados.</p>';
-    td.appendChild(wrap);
-    return;
-  }
-
-  // Mesma estrutura da tabela DRE: Conta | Descrição | (R$ + AV%) × (períodos + total)
-  const tbl   = document.createElement('table');
-  tbl.className = 'idw-table dre-table';
-  const thead = document.createElement('thead');
-
-  // Linha 1 de cabeçalho
-  const tr1 = document.createElement('tr');
-  tr1.appendChild(criarTH('Conta'));
-  tr1.appendChild(criarTH('Descrição'));
-  periodos.forEach(p => tr1.appendChild(criarTH(labelPeriodo(p, modoVisualizacao), { colSpan: 2 })));
-  tr1.appendChild(criarTH('Total', { colSpan: 2 }));
-  thead.appendChild(tr1);
-
-  // Linha 2: R$ / AV%
-  const tr2 = document.createElement('tr');
-  tr2.appendChild(criarTH(''));
-  tr2.appendChild(criarTH(''));
-  [...periodos, 'total'].forEach(() => {
-    tr2.appendChild(criarTH('R$'));
-    tr2.appendChild(criarTH('AV%'));
-  });
-  thead.appendChild(tr2);
-  tbl.appendChild(thead);
-
-  const tbody2 = document.createElement('tbody');
-
-  contas.forEach(c => {
+  const criarLinha = (descricao, classeExtra, getValFn) => {
     const tr = document.createElement('tr');
-    tr.className = 'idw-conta-row';
+    tr.className = `dre-inline-detail ${classeExtra}`;
 
-    const tdConta = document.createElement('td');
-    tdConta.style.cssText = 'font-family:monospace;font-size:.76rem;white-space:nowrap';
-    tdConta.textContent = c.conta;
-    tr.appendChild(tdConta);
+    // Célula prefixo (vazia — alinha com a col de prefix da DRE)
+    const tdPfx = document.createElement('td');
+    tr.appendChild(tdPfx);
 
+    // Descrição
     const tdDesc = document.createElement('td');
-    tdDesc.textContent = c.descConta;
+    tdDesc.textContent = descricao;
     tr.appendChild(tdDesc);
 
+    // Valores por período + total
     [...periodos, 'total'].forEach(p => {
-      const val      = p === 'total' ? c.total : (c.periodos[p] || 0);
-      const rb       = p === 'total' ? (total.receita_bruta || 0) : (calculado[p]?.receita_bruta || 0);
-      const tdVal    = document.createElement('td');
+      const val = getValFn(p);
+      const rb  = p === 'total' ? (total.receita_bruta || 0) : (calculado[p]?.receita_bruta || 0);
+
+      const tdVal = document.createElement('td');
       tdVal.textContent = formatBRL(val);
       tdVal.className   = val >= 0 ? 'val-pos' : 'val-neg';
-      const tdPct    = document.createElement('td');
+
+      const tdPct = document.createElement('td');
       tdPct.textContent = pct(val, rb);
       tdPct.className   = 'val-pct';
+
       tr.append(tdVal, tdPct);
     });
 
-    tbody2.appendChild(tr);
-  });
+    return tr;
+  };
 
-  // Linha de total do grupo
-  const trTot = document.createElement('tr');
-  trTot.className = 'idw-total-row';
-  const tdLbl = document.createElement('td');
-  tdLbl.colSpan = 2;
-  tdLbl.textContent = `Total — ${linhaLabel}`;
-  trTot.appendChild(tdLbl);
+  const linhas = contas.map(c =>
+    criarLinha(c.descConta, 'idw-conta-row',
+      p => p === 'total' ? c.total : (c.periodos[p] || 0))
+  );
 
-  [...periodos, 'total'].forEach(p => {
-    const val   = p === 'total'
-      ? contas.reduce((s, c) => s + c.total, 0)
-      : contas.reduce((s, c) => s + (c.periodos[p] || 0), 0);
-    const rb    = p === 'total' ? (total.receita_bruta || 0) : (calculado[p]?.receita_bruta || 0);
-    const tdVal = document.createElement('td');
-    tdVal.textContent = formatBRL(val);
-    tdVal.className   = val >= 0 ? 'val-pos' : 'val-neg';
-    const tdPct = document.createElement('td');
-    tdPct.textContent = pct(val, rb);
-    tdPct.className   = 'val-pct';
-    trTot.append(tdVal, tdPct);
-  });
+  // Linha de total só se houver mais de uma conta
+  if (contas.length > 1) {
+    linhas.push(criarLinha(`Total — ${linhaLabel}`, 'idw-total-row',
+      p => p === 'total'
+        ? contas.reduce((s, c) => s + c.total, 0)
+        : contas.reduce((s, c) => s + (c.periodos[p] || 0), 0)
+    ));
+  }
 
-  tbody2.appendChild(trTot);
-  tbl.appendChild(tbody2);
-  wrap.appendChild(tbl);
-  td.appendChild(wrap);
+  return linhas;
 }
 
 // ── DASHBOARD ────────────────────────────────────────────────
