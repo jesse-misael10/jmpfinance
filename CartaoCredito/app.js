@@ -502,19 +502,239 @@ function parseGenerico(pages) {
 // ══════════════════════════════════════════════════════════
 // IMPORT FLOW
 // ══════════════════════════════════════════════════════════
-let importQueue = []; // [{ file, parsed, status, items }]
+let importQueue = []; // [{ file, parsed, status, totalTx }]
+let importMode  = 'pdf'; // 'pdf' | 'excel' | 'manual'
+let manualRows  = [];    // [{ id, data, descricao, valor }]
 
 function openImportModal() {
   importQueue = [];
-  document.getElementById('import-progress').style.display = 'none';
-  document.getElementById('import-drop-area').style.display = 'flex';
-  document.getElementById('import-confirm').style.display = 'none';
-  document.getElementById('import-file-list').innerHTML = '';
+  manualRows  = [];
+  importMode  = 'pdf';
+
+  document.getElementById('import-banco-sel').value             = '';
+  document.getElementById('import-progress').style.display      = 'none';
+  document.getElementById('import-drop-area').style.display     = 'flex';
+  document.getElementById('import-excel-area').style.display    = 'none';
+  document.getElementById('import-manual-area').style.display   = 'none';
+  document.getElementById('import-confirm').style.display       = 'none';
+  document.getElementById('import-file-list').innerHTML         = '';
+  document.querySelectorAll('.import-method-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.method === 'pdf'));
+
   document.getElementById('modal-import').style.display = 'flex';
+}
+
+function switchImportMethod(method) {
+  importMode  = method;
+  importQueue = [];
+
+  document.getElementById('import-progress').style.display      = 'none';
+  document.getElementById('import-file-list').innerHTML         = '';
+  document.getElementById('import-drop-area').style.display     = method === 'pdf'    ? 'flex'  : 'none';
+  document.getElementById('import-excel-area').style.display    = method === 'excel'  ? 'flex'  : 'none';
+  document.getElementById('import-manual-area').style.display   = method === 'manual' ? 'block' : 'none';
+
+  document.querySelectorAll('.import-method-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.method === method));
+
+  if (method === 'manual') {
+    if (!manualRows.length) manualRows = [createManualRow()];
+    renderManualRows();
+    document.getElementById('import-confirm').style.display = 'inline-flex';
+  } else {
+    document.getElementById('import-confirm').style.display = 'none';
+  }
+}
+
+// ── Manual entry helpers ──────────────────────────────────
+function createManualRow() {
+  return { id: uid(), data: '', descricao: '', valor: '' };
+}
+
+function renderManualRows() {
+  const tbody = document.getElementById('manual-tbody');
+  if (!manualRows.length) manualRows = [createManualRow()];
+  tbody.innerHTML = manualRows.map((row, i) => `
+    <tr>
+      <td><input type="date"   class="form-control manual-data" data-idx="${i}" value="${esc(row.data)}" /></td>
+      <td><input type="text"   class="form-control manual-desc" data-idx="${i}" value="${esc(row.descricao)}" placeholder="Descrição" /></td>
+      <td><input type="number" class="form-control manual-val"  data-idx="${i}" value="${row.valor || ''}" placeholder="0.00" step="0.01" min="0" /></td>
+      <td><button class="btn-icon btn-delete manual-del" data-idx="${i}" title="Remover">✕</button></td>
+    </tr>`).join('');
+}
+
+function syncManualRows() {
+  manualRows.forEach((row, i) => {
+    const d = document.querySelector(`.manual-data[data-idx="${i}"]`);
+    const s = document.querySelector(`.manual-desc[data-idx="${i}"]`);
+    const v = document.querySelector(`.manual-val[data-idx="${i}"]`);
+    if (d) row.data      = d.value;
+    if (s) row.descricao = s.value;
+    if (v) row.valor     = v.value;
+  });
+}
+
+// ── Excel / CSV parser ────────────────────────────────────
+async function parseExcel(file) {
+  const buf  = await file.arrayBuffer();
+  const wb   = XLSX.read(buf, { type: 'array', cellDates: true });
+  const ws   = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+  if (!rows.length) return { transactions: [] };
+
+  const reData  = /^(data|date|dt\.?|data\s*(de\s*)?(lançamento|compra|transação|lancamento)?)$/i;
+  const reDesc  = /^(descri[çc][aã]o|descri[çc]ao|desc\.?|estabelecimento|hist[oó]rico|benefici[aá]rio|nome|merchant|historico)$/i;
+  const reValor = /^(valor|value|vl\.?|montante|total|amount|r\$)$/i;
+
+  let headerIdx = -1;
+  let colMap    = { data: -1, descricao: -1, valor: -1 };
+
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const row = rows[i];
+    const found = { data: -1, descricao: -1, valor: -1 };
+    for (let j = 0; j < row.length; j++) {
+      const cell = String(row[j]).trim();
+      if (reData.test(cell)  && found.data      === -1) found.data      = j;
+      if (reDesc.test(cell)  && found.descricao === -1) found.descricao = j;
+      if (reValor.test(cell) && found.valor     === -1) found.valor     = j;
+    }
+    if (found.data >= 0 && found.descricao >= 0 && found.valor >= 0) {
+      headerIdx = i;
+      colMap    = found;
+      break;
+    }
+  }
+
+  // Fallback: assume colunas 0=data, 1=desc, 2=valor, pula linha 0 como cabeçalho
+  if (headerIdx === -1) {
+    headerIdx = 0;
+    colMap    = { data: 0, descricao: 1, valor: 2 };
+  }
+
+  const transactions = [];
+  for (let i = headerIdx + 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row.some(c => c !== '')) continue; // skip empty rows
+
+    // Parse date
+    let isoDate   = '';
+    const dateRaw = row[colMap.data];
+    if (dateRaw instanceof Date) {
+      isoDate = dateRaw.toISOString().slice(0, 10);
+    } else if (typeof dateRaw === 'number' && dateRaw > 1000) {
+      // Excel serial date
+      try {
+        const d = new Date(Math.round((dateRaw - 25569) * 86400 * 1000));
+        isoDate = d.toISOString().slice(0, 10);
+      } catch (_) {}
+    } else {
+      const s    = String(dateRaw).trim();
+      const mDMY = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+      const mYMD = s.match(/^(\d{4})[\/\-](\d{2})[\/\-](\d{2})$/);
+      if (mDMY) {
+        const y = mDMY[3].length === 2 ? '20' + mDMY[3] : mDMY[3];
+        isoDate = `${y}-${mDMY[2].padStart(2,'0')}-${mDMY[1].padStart(2,'0')}`;
+      } else if (mYMD) {
+        isoDate = s;
+      }
+    }
+    if (!isoDate) continue;
+
+    const descricao = String(row[colMap.descricao] || '').trim();
+    if (!descricao) continue;
+
+    let valor = 0;
+    const valorRaw = row[colMap.valor];
+    if (typeof valorRaw === 'number') {
+      valor = Math.abs(valorRaw);
+    } else {
+      valor = Math.abs(parseBRLValue(String(valorRaw)));
+    }
+    if (isNaN(valor) || valor === 0) continue;
+
+    transactions.push({
+      data: isoDate,
+      descricao,
+      valor,
+      parcela:   '',
+      categoria: inferCategoria(descricao)
+    });
+  }
+
+  return { transactions };
+}
+
+async function processExcelFiles(files) {
+  if (!files || !files.length) return;
+  const bancoSel = document.getElementById('import-banco-sel').value;
+  if (!bancoSel) { showToast('Selecione o banco antes de importar.', 'error'); return; }
+
+  document.getElementById('import-excel-area').style.display = 'none';
+  document.getElementById('import-progress').style.display   = 'block';
+  const list = document.getElementById('import-file-list');
+
+  for (const file of files) {
+    const itemEl = document.createElement('div');
+    itemEl.className = 'import-file-item';
+    itemEl.innerHTML = `
+      <div class="import-file-icon">📊</div>
+      <div class="import-file-info">
+        <div class="import-file-name">${esc(file.name)}</div>
+        <div class="import-file-bank">${BANCO_LABELS[bancoSel] || bancoSel}</div>
+        <div class="import-file-status loading">⏳ Lendo arquivo…</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" style="width:30%"></div></div>
+      </div>`;
+    list.appendChild(itemEl);
+
+    const statusEl = itemEl.querySelector('.import-file-status');
+    const barEl    = itemEl.querySelector('.progress-bar');
+
+    try {
+      barEl.style.width = '60%';
+      const { transactions } = await parseExcel(file);
+      barEl.style.width = '100%';
+
+      if (!transactions.length) {
+        statusEl.className   = 'import-file-status err';
+        statusEl.textContent = '⚠ Nenhuma transação encontrada. Verifique as colunas (Data, Descrição, Valor).';
+        importQueue.push({ file, parsed: [], status: 'warn', totalTx: 0 });
+      } else {
+        statusEl.className = 'import-file-status ok';
+        statusEl.innerHTML = `✔ ${transactions.length} lançamento${transactions.length !== 1 ? 's' : ''} encontrado${transactions.length !== 1 ? 's' : ''}`;
+
+        const preview = document.createElement('div');
+        preview.className = 'import-tx-preview';
+        preview.innerHTML = transactions.slice(0, 5).map(t =>
+          `${fmtDate(t.data)} — ${esc(t.descricao.slice(0, 40))} — ${fmtBRL(t.valor)}`
+        ).join('<br>') + (transactions.length > 5 ? `<br>… e mais ${transactions.length - 5}` : '');
+        itemEl.querySelector('.import-file-info').appendChild(preview);
+
+        importQueue.push({
+          file,
+          parsed: [{ banco: bancoSel, ultimos: '', portador: '', transactions }],
+          status: 'ok',
+          totalTx: transactions.length
+        });
+      }
+    } catch (err) {
+      barEl.style.width      = '100%';
+      barEl.style.background = 'var(--c-red)';
+      statusEl.className     = 'import-file-status err';
+      statusEl.textContent   = '✖ Erro ao processar: ' + (err.message || 'desconhecido');
+      importQueue.push({ file, parsed: [], status: 'error', totalTx: 0 });
+    }
+  }
+
+  const hasOk = importQueue.some(q => q.status === 'ok');
+  document.getElementById('import-confirm').style.display = hasOk ? 'inline-flex' : 'none';
 }
 
 async function processImportFiles(files) {
   if (!files || !files.length) return;
+  const bancoSel = document.getElementById('import-banco-sel').value;
+  if (!bancoSel) { showToast('Selecione o banco antes de importar.', 'error'); return; }
+
   document.getElementById('import-drop-area').style.display = 'none';
   document.getElementById('import-progress').style.display  = 'block';
 
@@ -580,9 +800,66 @@ async function processImportFiles(files) {
   document.getElementById('import-confirm').style.display = hasOk ? 'inline-flex' : 'none';
 }
 
+function confirmManualImport() {
+  syncManualRows();
+  const bancoSel = document.getElementById('import-banco-sel').value;
+  if (!bancoSel) { showToast('Selecione o banco antes de confirmar.', 'error'); return; }
+
+  const transactions = manualRows
+    .filter(r => r.data && r.descricao.trim() && r.valor)
+    .map(r => ({
+      data:      r.data,
+      descricao: r.descricao.trim(),
+      valor:     Math.abs(parseFloat(r.valor)),
+      parcela:   '',
+      categoria: inferCategoria(r.descricao)
+    }))
+    .filter(t => !isNaN(t.valor) && t.valor > 0);
+
+  if (!transactions.length) {
+    showToast('Preencha ao menos um lançamento completo (data, descrição e valor).', 'error');
+    return;
+  }
+
+  const hoje        = new Date().toISOString().slice(0, 10);
+  const cartao      = findOrCreateCartao(bancoSel, '', '');
+  const primeiraData = transactions.map(t => t.data).sort()[0] || hoje;
+  const mesRef      = primeiraData.slice(0, 7);
+  const faturaId    = uid();
+
+  Store.addFatura({
+    id:          faturaId,
+    cartaoId:    cartao.id,
+    mesRef,
+    fileName:    'Entrada manual',
+    importadaEm: hoje,
+    total:       transactions.reduce((s, t) => s + t.valor, 0)
+  });
+
+  const lancs = transactions.map(t => ({
+    id:        uid(),
+    faturaId,
+    cartaoId:  cartao.id,
+    data:      t.data,
+    descricao: t.descricao,
+    valor:     t.valor,
+    parcela:   '',
+    categoria: t.categoria
+  }));
+
+  Store.addLancs(lancs);
+  document.getElementById('modal-import').style.display = 'none';
+  manualRows = [];
+  showToast(`✔ ${lancs.length} lançamentos importados`, 'success');
+  renderAll();
+}
+
 function confirmImport() {
+  if (importMode === 'manual') { confirmManualImport(); return; }
+
+  const bancoSel    = document.getElementById('import-banco-sel').value;
   let totalImported = 0;
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje        = new Date().toISOString().slice(0, 10);
 
   for (const entry of importQueue) {
     if (entry.status !== 'ok') continue;
@@ -590,8 +867,9 @@ function confirmImport() {
     for (const grupo of entry.parsed) {
       if (!grupo.transactions.length) continue;
 
-      // Encontrar ou criar cartão
-      let cartao = findOrCreateCartao(grupo.banco, grupo.ultimos, grupo.portador);
+      // Banco: usa seleção manual como prioridade
+      const banco = bancoSel || grupo.banco;
+      let cartao  = findOrCreateCartao(banco, grupo.ultimos, grupo.portador);
 
       // Criar fatura
       const primeiraData = grupo.transactions
@@ -1177,6 +1455,48 @@ function init() {
     document.getElementById('modal-import').style.display = 'none');
   document.getElementById('import-cancel').addEventListener('click', () =>
     document.getElementById('modal-import').style.display = 'none');
+
+  // Method tabs
+  document.getElementById('import-method-tabs').addEventListener('click', e => {
+    const btn = e.target.closest('.import-method-btn');
+    if (btn) switchImportMethod(btn.dataset.method);
+  });
+
+  // Excel drop area
+  const excelArea = document.getElementById('import-excel-area');
+  excelArea.addEventListener('click', () => document.getElementById('import-excel-input').click());
+  excelArea.addEventListener('dragover', e => { e.preventDefault(); excelArea.classList.add('dragover'); });
+  excelArea.addEventListener('dragleave', () => excelArea.classList.remove('dragover'));
+  excelArea.addEventListener('drop', e => {
+    e.preventDefault();
+    excelArea.classList.remove('dragover');
+    processExcelFiles(e.dataTransfer.files);
+  });
+  document.getElementById('import-excel-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    document.getElementById('import-excel-input').click();
+  });
+  document.getElementById('import-excel-input').addEventListener('change', e => {
+    processExcelFiles(e.target.files);
+    e.target.value = '';
+  });
+
+  // Manual: adicionar linha
+  document.getElementById('manual-add-row').addEventListener('click', () => {
+    syncManualRows();
+    manualRows.push(createManualRow());
+    renderManualRows();
+  });
+
+  // Manual: remover linha (delegação)
+  document.getElementById('manual-tbody').addEventListener('click', e => {
+    const btn = e.target.closest('.manual-del');
+    if (!btn) return;
+    syncManualRows();
+    manualRows.splice(parseInt(btn.dataset.idx), 1);
+    if (!manualRows.length) manualRows = [createManualRow()];
+    renderManualRows();
+  });
 
   // Modal fatura
   document.getElementById('fatura-close').addEventListener('click', () =>

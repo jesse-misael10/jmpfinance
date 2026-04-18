@@ -335,7 +335,7 @@ body { display: flex; flex-direction: column; }
    IMPORT MODAL
    ============================================================ */
 .modal-import-box {
-  max-width: 560px;
+  max-width: 640px;
   width: 100%;
 }
 
@@ -400,6 +400,77 @@ body { display: flex; flex-direction: column; }
   overflow-y: auto;
   line-height: 1.5;
 }
+
+/* ============================================================
+   IMPORT — BANCO ROW & METHOD TABS
+   ============================================================ */
+.import-banco-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin: .75rem 0 0;
+}
+
+.import-banco-row .form-label {
+  white-space: nowrap;
+  font-size: .8rem;
+  margin: 0;
+}
+
+.import-method-tabs {
+  display: flex;
+  gap: .25rem;
+  margin: .75rem 0 0;
+  border-bottom: 2px solid var(--c-border);
+  padding-bottom: 0;
+}
+
+.import-method-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  padding: .4rem .9rem;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--c-muted);
+  cursor: pointer;
+  border-radius: var(--radius) var(--radius) 0 0;
+  transition: color .15s, background .15s;
+}
+.import-method-btn:hover { color: var(--c-navy); background: var(--c-bg); }
+.import-method-btn.active {
+  color: var(--c-blue);
+  background: var(--c-bg);
+  border-bottom-color: var(--c-blue);
+}
+
+/* ── Manual entry table ── */
+.manual-table-wrap {
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  margin-top: .75rem;
+}
+
+.manual-entry-table th,
+.manual-entry-table td {
+  white-space: nowrap;
+  padding: 5px 8px;
+}
+
+.manual-entry-table .form-control {
+  width: 100%;
+  min-width: 0;
+  padding: 4px 6px;
+  font-size: .8rem;
+}
+
+.manual-entry-table td:first-child  { width: 130px; }
+.manual-entry-table td:nth-child(2) { width: 100%;  }
+.manual-entry-table td:nth-child(3) { width: 110px; }
+.manual-entry-table td:last-child   { width: 32px;  }
 
 /* ============================================================
    FATURA DETAIL MODAL

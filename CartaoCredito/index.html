@@ -219,10 +219,31 @@
 <div class="modal-overlay" id="modal-import" style="display:none;">
   <div class="modal-box modal-import-box">
     <div class="modal-header-row">
-      <span class="modal-title" id="import-title">Importar Fatura PDF</span>
+      <span class="modal-title">Importar Lançamentos</span>
       <button class="modal-close" id="import-close">&times;</button>
     </div>
 
+    <!-- Banco selector (sempre obrigatório) -->
+    <div class="import-banco-row">
+      <label class="form-label">Banco <span class="req">*</span></label>
+      <select class="select-input" id="import-banco-sel" style="flex:1;">
+        <option value="">— Selecione o banco —</option>
+        <option value="mercado_pago">Mercado Pago</option>
+        <option value="inter">Inter</option>
+        <option value="santander_empresas">Santander Empresas</option>
+        <option value="santander_unique">Santander Unique</option>
+        <option value="outro">Outro</option>
+      </select>
+    </div>
+
+    <!-- Method tabs -->
+    <div class="import-method-tabs" id="import-method-tabs">
+      <button class="import-method-btn active" data-method="pdf">📄 PDF</button>
+      <button class="import-method-btn" data-method="excel">📊 Excel / CSV</button>
+      <button class="import-method-btn" data-method="manual">✏ Manual</button>
+    </div>
+
+    <!-- PDF drop area -->
     <div id="import-drop-area" class="import-drop-area">
       <div class="import-icon">📥</div>
       <div class="import-title-text">Arraste os PDFs aqui ou clique para selecionar</div>
@@ -231,6 +252,34 @@
       <input type="file" id="import-file-input" accept="application/pdf" multiple style="display:none;" />
     </div>
 
+    <!-- Excel / CSV drop area -->
+    <div id="import-excel-area" class="import-drop-area" style="display:none;">
+      <div class="import-icon">📊</div>
+      <div class="import-title-text">Arraste o arquivo aqui ou clique para selecionar</div>
+      <div class="import-sub">Aceita .xlsx · .xls · .csv &nbsp;|&nbsp; Colunas: Data · Descrição · Valor</div>
+      <button class="btn btn-outline btn-sm" id="import-excel-btn">Selecionar arquivo</button>
+      <input type="file" id="import-excel-input" accept=".xlsx,.xls,.csv" style="display:none;" />
+    </div>
+
+    <!-- Entrada manual -->
+    <div id="import-manual-area" style="display:none;">
+      <div class="manual-table-wrap">
+        <table class="data-table manual-entry-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Descrição</th>
+              <th>Valor (R$)</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="manual-tbody"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-outline btn-sm" id="manual-add-row" style="margin-top:.5rem;">+ Adicionar linha</button>
+    </div>
+
+    <!-- Progress (PDF / Excel) -->
     <div id="import-progress" style="display:none;">
       <div class="import-file-list" id="import-file-list"></div>
     </div>
@@ -353,6 +402,7 @@
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
