@@ -125,6 +125,7 @@ let filtroFilial = new Set();   // Set vazio = sem filtro (todos)
 let filtroBU     = new Set();
 let abaPrincipal = 'dre';       // 'dre' | 'bp' | 'dashboard'
 let dashPeriodo  = null;        // null = Acumulado; string = período selecionado
+let drePeriodo   = null;        // null = Acumulado; string = período selecionado na DRE
 let chartDash1   = null;
 let chartDash2   = null;
 
@@ -323,12 +324,14 @@ function popularFiltros(rows) {
 
   msFilial = criarMultiSelect('filterFilial', 'Todas as Empresas', sel => {
     filtroFilial = sel;
+    drePeriodo = null;
     renderizar();
   });
   msFilial.setOpcoes(filiais);
 
   msBU = criarMultiSelect('filterBU', 'Todas as UNs', sel => {
     filtroBU = sel;
+    drePeriodo = null;
     renderizar();
   });
   msBU.setOpcoes(bus);
@@ -503,8 +506,25 @@ function renderizar() {
     renderizarDashboard(periodos, calculado, total);
   } else {
     const { periodos, calculado, total } = processarDRE(dadosBrutos, filtroFilial, filtroBU, modoVisualizacao);
-    renderizarKPIs(total, periodos);
-    renderizarTabela(periodos, calculado, total);
+
+    // Barra de períodos da DRE
+    const bar = document.getElementById('drePeriodBar');
+    bar.innerHTML = '';
+    const criarBtnDre = (chave, label) => {
+      const btn = document.createElement('button');
+      btn.className = `dash-pb${drePeriodo === chave ? ' active' : ''}`;
+      btn.textContent = label;
+      btn.addEventListener('click', () => { drePeriodo = chave; renderizar(); });
+      return btn;
+    };
+    bar.appendChild(criarBtnDre(null, 'Acumulado'));
+    periodos.forEach(p => bar.appendChild(criarBtnDre(p, labelPeriodo(p, modoVisualizacao))));
+
+    // Filtrar períodos visíveis na tabela
+    const periodosVisiveis = drePeriodo ? periodos.filter(p => p === drePeriodo) : periodos;
+
+    renderizarKPIs(drePeriodo ? calculado[drePeriodo] : total, periodosVisiveis);
+    renderizarTabela(periodosVisiveis, calculado, total);
   }
 }
 
@@ -881,11 +901,9 @@ function abrirModalLancamentos(conta, descConta) {
         <thead>
           <tr>
             <th>Data</th>
-            <th>Filial</th>
+            <th>Histórico</th>
             <th>BU</th>
-            <th>Natureza</th>
-            <th>Débito</th>
-            <th>Crédito</th>
+            <th>Saldo</th>
             <th>Valor DRE</th>
           </tr>
         </thead>`;
@@ -894,17 +912,14 @@ function abrirModalLancamentos(conta, descConta) {
       lancamentos.forEach(r => {
         const tr = document.createElement('tr');
         const dataFmt = r._date.toLocaleDateString('pt-BR');
-        const deb  = parseFloat(r.VALOR_DEBITO)  || 0;
-        const cred = parseFloat(r.VALOR_CREDITO) || 0;
-        const v    = r._dreVal;
+        const saldo = parseFloat(r.SALDO) || 0;
+        const v     = r._dreVal;
         tr.innerHTML = `
           <td>${dataFmt}</td>
-          <td>${r.FILIAL_NOME || '—'}</td>
-          <td>${r.BU         || '—'}</td>
-          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
               title="${(r.NATUREZA || '').replace(/"/g, '&quot;')}">${r.NATUREZA || '—'}</td>
-          <td class="col-val ${deb  ? 'neg' : ''}">${deb  ? formatBRL(deb)  : '—'}</td>
-          <td class="col-val ${cred ? 'pos' : ''}">${cred ? formatBRL(cred) : '—'}</td>
+          <td>${r.BU || '—'}</td>
+          <td class="col-val ${saldo >= 0 ? 'pos' : 'neg'}">${formatBRL(saldo)}</td>
           <td class="col-val ${v >= 0 ? 'pos' : 'neg'}">${formatBRL(v)}</td>`;
         tbody.appendChild(tr);
       });
