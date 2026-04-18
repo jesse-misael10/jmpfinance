@@ -1082,34 +1082,8 @@ body {
 
 /* Inner wrapper */
 .idw-wrap {
-  padding: 1rem 1.25rem 1.25rem;
+  padding: .75rem 1rem 1rem;
   border-left: 4px solid var(--c-blue);
-  margin: 0;
-}
-
-.idw-hdr {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: .85rem;
-  flex-wrap: wrap;
-}
-
-.idw-title {
-  font-size: .9rem;
-  font-weight: 700;
-  color: var(--c-navy-md);
-}
-
-.idw-meta {
-  font-size: .78rem;
-  color: var(--c-muted);
-}
-
-.idw-total {
-  margin-left: auto;
-  font-size: 1rem;
-  font-weight: 800;
 }
 
 .idw-empty {
@@ -1119,58 +1093,30 @@ body {
   padding: .5rem 0;
 }
 
-.idw-table {
-  width: 100%;
-  border-collapse: collapse;
+/* Sub-table reutiliza .dre-table + estilos específicos */
+.idw-table.dre-table {
+  min-width: unset;
+  font-size: .8rem;
+}
+
+/* Linha de conta individual */
+.idw-conta-row td {
+  background: #f8faff;
+  font-size: .8rem;
+}
+.idw-conta-row td:first-child { text-align: left; width: auto; min-width: 110px; }
+.idw-conta-row td:nth-child(2) { min-width: 180px; }
+.idw-conta-row:hover td { background: #eef3fd !important; }
+
+/* Linha de total do sub-grupo */
+.idw-total-row td {
+  background: #dbeafe;
+  font-weight: 700;
   font-size: .82rem;
-  background: #fff;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
-.idw-table thead th {
-  background: var(--c-navy-md);
-  color: rgba(255,255,255,.85);
-  padding: .5rem .85rem;
-  text-align: left;
-  font-size: .72rem;
-  font-weight: 700;
-  letter-spacing: .04em;
-}
-.idw-table thead th.idw-num { text-align: right; }
-
-/* Group rows */
-.idw-group {
-  cursor: pointer;
-  background: #f8fafc;
-  user-select: none;
-}
-.idw-group:hover td { background: #eef3fd !important; }
-.idw-group td {
-  padding: .52rem .85rem;
-  border-bottom: 1px solid var(--c-border);
-  font-weight: 700;
+  border-top: 2px solid #93c5fd;
   color: var(--c-navy-md);
-  font-size: .81rem;
 }
-.idw-group.is-open .dd-toggle-icon { transform: rotate(90deg); }
-
-/* Item rows */
-.idw-item { display: none; }
-.idw-item.visible { display: table-row; }
-.idw-item td {
-  padding: .38rem .85rem .38rem 2rem;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: .79rem;
-  color: var(--c-text);
-}
-.idw-item:hover td { background: #f8fafc; }
-.idw-num { text-align: right; }
-
-.idw-date    { white-space: nowrap; color: var(--c-muted); font-size: .76rem; }
-.idw-empresa { max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .76rem; }
-.idw-hist    { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--c-muted); }
+.idw-total-row td:first-child { text-align: left; padding-left: 1rem; }
 
 /* ============================================================
    DASHBOARD TAB

@@ -638,7 +638,7 @@ function renderizarTabela(periodos, calculado, total) {
     trDetail.className = 'dre-inline-detail';
     const td = document.createElement('td');
     td.colSpan = numCols;
-    construirDetalheInline(td, tr.dataset.linhaId, tr.dataset.linhaLabel, tr.dataset.linhaPrefix);
+    construirDetalheInline(td, tr.dataset.linhaId, tr.dataset.linhaLabel, tr.dataset.linhaPrefix, periodos, calculado, total);
     trDetail.appendChild(td);
     tr.insertAdjacentElement('afterend', trDetail);
   });
@@ -688,114 +688,129 @@ function opcoesGrafico({ tooltip, tickY }) {
 
 // ── DRILL-DOWN INLINE (DRE) ──────────────────────────────────
 
-function getLancamentosDREInline(linhaId) {
+/**
+ * Agrega os dados brutos por conta × período para uma linha da DRE.
+ * Retorna { contasMapa: { [conta]: { conta, descConta, periodos:{}, total } } }
+ */
+function agregarContasPorPeriodo(linhaId) {
   const categorias = DRILL_MAPA[linhaId] || [];
-  return dadosBrutos
-    .filter(r => {
-      if (!r.CONTA || !r.DATA) return false;
-      if (filtroFilial.size > 0 && !filtroFilial.has(r.FILIAL_NOME)) return false;
-      if (filtroBU.size     > 0 && !filtroBU.has(r.BU))             return false;
-      return categorias.includes(classificarConta(r.CONTA));
-    })
-    .map(r => {
-      const d = extrairData(r.DATA);
-      let saldo = parseFloat(r.SALDO);
-      if (isNaN(saldo)) saldo = (parseFloat(r.VALOR_DEBITO) || 0) - (parseFloat(r.VALOR_CREDITO) || 0);
-      return {
-        data:      d,
-        filial:    r.FILIAL_NOME || '',
-        bu:        r.BU || '',
-        conta:     String(r.CONTA || ''),
-        descConta: r.DESC_CONTA || '',
-        historico: r.HISTORICO || '',
-        dreVal:    -saldo,
-      };
-    })
-    .sort((a, b) => a.conta.localeCompare(b.conta));
-}
+  const contasMapa = {};
 
-function construirDetalheInline(td, linhaId, linhaLabel, linhaPrefix) {
-  const lancamentos = getLancamentosDREInline(linhaId);
+  dadosBrutos.forEach(r => {
+    if (!r.CONTA || !r.DATA) return;
+    if (filtroFilial.size > 0 && !filtroFilial.has(r.FILIAL_NOME)) return;
+    if (filtroBU.size     > 0 && !filtroBU.has(r.BU))             return;
+    if (!categorias.includes(classificarConta(r.CONTA))) return;
 
-  // Agrupar por conta
-  const grupos = {};
-  lancamentos.forEach(l => {
-    if (!grupos[l.conta]) grupos[l.conta] = { conta: l.conta, descConta: l.descConta, items: [], subtotal: 0 };
-    grupos[l.conta].items.push(l);
-    grupos[l.conta].subtotal += l.dreVal;
+    const d = extrairData(r.DATA);
+    if (!d) return;
+
+    const p    = chavePeriodo(d, modoVisualizacao);
+    const key  = String(r.CONTA || '');
+    let saldo  = parseFloat(r.SALDO);
+    if (isNaN(saldo)) saldo = (parseFloat(r.VALOR_DEBITO) || 0) - (parseFloat(r.VALOR_CREDITO) || 0);
+    const dreVal = -saldo;
+
+    if (!contasMapa[key]) contasMapa[key] = {
+      conta: key, descConta: r.DESC_CONTA || key, periodos: {}, total: 0,
+    };
+    contasMapa[key].periodos[p] = (contasMapa[key].periodos[p] || 0) + dreVal;
+    contasMapa[key].total += dreVal;
   });
 
-  const totalGeral = lancamentos.reduce((s, l) => s + l.dreVal, 0);
-  const numContas  = Object.keys(grupos).length;
+  return contasMapa;
+}
+
+function construirDetalheInline(td, linhaId, linhaLabel, linhaPrefix, periodos, calculado, total) {
+  const contasMapa = agregarContasPorPeriodo(linhaId);
+  const contas     = Object.values(contasMapa).sort((a, b) => a.conta.localeCompare(b.conta));
 
   const wrap = document.createElement('div');
   wrap.className = 'idw-wrap';
 
-  const hdr = document.createElement('div');
-  hdr.className = 'idw-hdr';
-  hdr.innerHTML =
-    `<span class="idw-title">${linhaPrefix} ${linhaLabel}</span>` +
-    `<span class="idw-meta">${lancamentos.length} lançamento(s) · ${numContas} conta(s)</span>` +
-    `<span class="idw-total ${totalGeral >= 0 ? 'val-pos' : 'val-neg'}">${formatBRL(totalGeral)}</span>`;
-  wrap.appendChild(hdr);
-
-  if (!lancamentos.length) {
-    const p = document.createElement('p');
-    p.className = 'idw-empty';
-    p.textContent = 'Nenhum lançamento encontrado para os filtros selecionados.';
-    wrap.appendChild(p);
+  if (!contas.length) {
+    wrap.innerHTML = '<p class="idw-empty">Nenhum dado encontrado para os filtros selecionados.</p>';
     td.appendChild(wrap);
     return;
   }
 
-  const tbl = document.createElement('table');
-  tbl.className = 'idw-table';
-  tbl.innerHTML =
-    '<thead><tr><th></th><th>Conta</th><th>Descrição</th>' +
-    '<th class="idw-num">Lançamentos</th><th class="idw-num">Subtotal</th></tr></thead>';
+  // Mesma estrutura da tabela DRE: Conta | Descrição | (R$ + AV%) × (períodos + total)
+  const tbl   = document.createElement('table');
+  tbl.className = 'idw-table dre-table';
+  const thead = document.createElement('thead');
+
+  // Linha 1 de cabeçalho
+  const tr1 = document.createElement('tr');
+  tr1.appendChild(criarTH('Conta'));
+  tr1.appendChild(criarTH('Descrição'));
+  periodos.forEach(p => tr1.appendChild(criarTH(labelPeriodo(p, modoVisualizacao), { colSpan: 2 })));
+  tr1.appendChild(criarTH('Total', { colSpan: 2 }));
+  thead.appendChild(tr1);
+
+  // Linha 2: R$ / AV%
+  const tr2 = document.createElement('tr');
+  tr2.appendChild(criarTH(''));
+  tr2.appendChild(criarTH(''));
+  [...periodos, 'total'].forEach(() => {
+    tr2.appendChild(criarTH('R$'));
+    tr2.appendChild(criarTH('AV%'));
+  });
+  thead.appendChild(tr2);
+  tbl.appendChild(thead);
+
   const tbody2 = document.createElement('tbody');
 
-  Object.values(grupos).forEach(grupo => {
-    const trG = document.createElement('tr');
-    trG.className = 'idw-group';
+  contas.forEach(c => {
+    const tr = document.createElement('tr');
+    tr.className = 'idw-conta-row';
 
-    const tdTog = document.createElement('td');
-    tdTog.innerHTML = '<span class="dd-toggle-icon">▶</span>';
     const tdConta = document.createElement('td');
-    tdConta.style.fontFamily = 'monospace';
-    tdConta.textContent = grupo.conta;
+    tdConta.style.cssText = 'font-family:monospace;font-size:.76rem;white-space:nowrap';
+    tdConta.textContent = c.conta;
+    tr.appendChild(tdConta);
+
     const tdDesc = document.createElement('td');
-    tdDesc.textContent = grupo.descConta;
-    const tdCnt = document.createElement('td');
-    tdCnt.className = 'idw-num';
-    tdCnt.textContent = grupo.items.length;
-    const tdSub = document.createElement('td');
-    tdSub.className = `idw-num ${grupo.subtotal >= 0 ? 'val-pos' : 'val-neg'}`;
-    tdSub.textContent = formatBRL(grupo.subtotal);
+    tdDesc.textContent = c.descConta;
+    tr.appendChild(tdDesc);
 
-    trG.append(tdTog, tdConta, tdDesc, tdCnt, tdSub);
-    tbody2.appendChild(trG);
-
-    const itemRows = grupo.items.map(l => {
-      const tr = document.createElement('tr');
-      tr.className = 'idw-item';
-      const dataStr = l.data ? l.data.toLocaleDateString('pt-BR') : '—';
-      tr.innerHTML =
-        `<td></td>` +
-        `<td class="idw-date">${dataStr}</td>` +
-        `<td class="idw-empresa">${l.filial}${l.bu ? ` <span class="dd-bu-badge">${l.bu}</span>` : ''}</td>` +
-        `<td colspan="1" class="idw-hist" title="${l.historico.replace(/"/g,'&quot;')}">${l.historico || '—'}</td>` +
-        `<td class="idw-num ${l.dreVal >= 0 ? 'val-pos' : 'val-neg'}">${formatBRL(l.dreVal)}</td>`;
-      tbody2.appendChild(tr);
-      return tr;
+    [...periodos, 'total'].forEach(p => {
+      const val      = p === 'total' ? c.total : (c.periodos[p] || 0);
+      const rb       = p === 'total' ? (total.receita_bruta || 0) : (calculado[p]?.receita_bruta || 0);
+      const tdVal    = document.createElement('td');
+      tdVal.textContent = formatBRL(val);
+      tdVal.className   = val >= 0 ? 'val-pos' : 'val-neg';
+      const tdPct    = document.createElement('td');
+      tdPct.textContent = pct(val, rb);
+      tdPct.className   = 'val-pct';
+      tr.append(tdVal, tdPct);
     });
 
-    trG.addEventListener('click', () => {
-      const open = trG.classList.toggle('is-open');
-      itemRows.forEach(r => r.classList.toggle('visible', open));
-    });
+    tbody2.appendChild(tr);
   });
 
+  // Linha de total do grupo
+  const trTot = document.createElement('tr');
+  trTot.className = 'idw-total-row';
+  const tdLbl = document.createElement('td');
+  tdLbl.colSpan = 2;
+  tdLbl.textContent = `Total — ${linhaLabel}`;
+  trTot.appendChild(tdLbl);
+
+  [...periodos, 'total'].forEach(p => {
+    const val   = p === 'total'
+      ? contas.reduce((s, c) => s + c.total, 0)
+      : contas.reduce((s, c) => s + (c.periodos[p] || 0), 0);
+    const rb    = p === 'total' ? (total.receita_bruta || 0) : (calculado[p]?.receita_bruta || 0);
+    const tdVal = document.createElement('td');
+    tdVal.textContent = formatBRL(val);
+    tdVal.className   = val >= 0 ? 'val-pos' : 'val-neg';
+    const tdPct = document.createElement('td');
+    tdPct.textContent = pct(val, rb);
+    tdPct.className   = 'val-pct';
+    trTot.append(tdVal, tdPct);
+  });
+
+  tbody2.appendChild(trTot);
   tbl.appendChild(tbody2);
   wrap.appendChild(tbl);
   td.appendChild(wrap);
