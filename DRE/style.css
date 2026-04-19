@@ -5,10 +5,10 @@
 
 /* ---------- TOKENS ---------- */
 :root {
-  --c-bg:        #f0f4f8;
+  --c-bg:        #f5f5f0;
   --c-card:      #ffffff;
-  --c-border:    #e2e8f0;
-  --c-border-md: #cbd5e1;
+  --c-border:    #d4d4c8;
+  --c-border-md: #c4c4b8;
 
   --c-navy:      #0f2744;
   --c-navy-md:   #1e3a5f;
@@ -38,7 +38,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   color: var(--c-text);
@@ -475,13 +475,13 @@ body {
 
 .table-wrapper {
   background: var(--c-card);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--c-border);
+  border: 1px solid #d4d4c8;
   overflow-x: auto;
 }
 
-/* ---------- DRE TABLE ---------- */
+/* ---------- DRE TABLE (Modelo 3 — Consultoria) ---------- */
 .dre-table {
   width: 100%;
   border-collapse: collapse;
@@ -489,110 +489,114 @@ body {
   min-width: 700px;
 }
 
-/* Head */
+/* Head — linha 1: nomes dos períodos */
 .dre-table thead tr:first-child th {
-  background: var(--c-navy);
-  color: rgba(255,255,255,.9);
-  padding: .75rem 1rem;
-  font-size: .75rem;
-  font-weight: 700;
+  background: #fafaf7;
+  color: #6b6b6b;
+  padding: .6rem .9rem;
+  font-size: .62rem;
+  font-weight: 800;
   text-align: right;
   white-space: nowrap;
-  letter-spacing: .03em;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  border-bottom: 2px solid #1a1a2e;
 }
 .dre-table thead tr:first-child th:first-child,
 .dre-table thead tr:first-child th:nth-child(2) { text-align: left; }
 
+/* Head — linha 2: R$ / AV% */
 .dre-table thead tr:nth-child(2) th {
-  background: #162f52;
-  color: rgba(255,255,255,.65);
-  padding: .45rem 1rem;
-  font-size: .7rem;
+  background: #fafaf7;
+  color: #9b9b8e;
+  padding: .35rem .9rem;
+  font-size: .6rem;
   font-weight: 600;
   text-align: right;
-  border-bottom: 2px solid rgba(255,255,255,.12);
+  border-bottom: 2px solid #d4d4c8;
 }
 .dre-table thead tr:nth-child(2) th:nth-child(1),
 .dre-table thead tr:nth-child(2) th:nth-child(2) { text-align: left; }
 
-/* Body base */
+/* Body base — fundo branco uniforme em todas as colunas */
 .dre-table tbody td {
-  padding: .55rem 1rem;
-  border-bottom: 1px solid #f1f5f9;
+  padding: .6rem .9rem;
+  border-bottom: 1px solid #ebebdf;
   text-align: right;
   white-space: nowrap;
   vertical-align: middle;
+  background: #fff;
 }
 .dre-table tbody td:first-child {
   text-align: center;
-  color: var(--c-light);
-  font-size: .72rem;
+  color: #c0b9a8;
+  font-size: .7rem;
   font-weight: 700;
   width: 52px;
 }
 .dre-table tbody td:nth-child(2) {
   text-align: left;
   min-width: 240px;
-  color: var(--c-text);
+  color: #1a1a2e;
   font-weight: 500;
 }
 
 /* Row types */
-.row-item:hover td          { background: #f8fafc; }
-.row-subitem td             { background: #fafbfe; font-size: .8rem; }
-.row-subitem td:nth-child(2){ padding-left: 2.25rem; color: var(--c-muted); }
-.row-subitem:hover td       { background: #f0f4fb; }
+.row-item:hover td          { background: #fafaf7 !important; }
+.row-subitem td             { font-size: .8rem; }
+.row-subitem td:nth-child(2){ padding-left: 2.25rem; color: #5a5a5a; }
+.row-subitem:hover td       { background: #fafaf7 !important; }
 
 .row-header td {
-  background: #f1f5f9 !important;
-  font-size: .7rem;
+  background: #f2f2eb !important;
+  font-size: .62rem;
   font-weight: 800;
-  color: var(--c-navy-md);
+  color: #1a1a2e !important;
   text-transform: uppercase;
-  letter-spacing: .06em;
-  padding-top: .85rem;
-  padding-bottom: .4rem;
-  border-top: 2px solid var(--c-border-md);
+  letter-spacing: .12em;
+  padding-top: .9rem;
+  padding-bottom: .35rem;
+  border-top: 2px solid #d4d4c8;
 }
 .row-header td:first-child { text-align: left; }
 
 .row-total td {
-  background: #ebf0fb;
   font-weight: 700;
-  border-top: 1.5px solid #c7d8f5;
-  border-bottom: 1.5px solid #c7d8f5;
+  border-top: 1.5px solid #d4d4c8 !important;
+  border-bottom: 1.5px solid #d4d4c8 !important;
 }
-.row-total td:nth-child(2) { color: var(--c-navy-md); }
+.row-total td:nth-child(2) { color: #1a1a2e; }
 
 .row-highlight td {
-  background: var(--c-navy);
+  background: #1a1a2e !important;
   color: #fff !important;
   font-weight: 800;
   font-size: .9rem;
-  border-top: 2px solid var(--c-navy-md);
-  border-bottom: 2px solid var(--c-navy-md);
+  border-top: 2px solid #1a1a2e !important;
+  border-bottom: 2px solid #1a1a2e !important;
 }
 .row-highlight td:nth-child(2) { color: rgba(255,255,255,.95) !important; }
 
 /* Value colors */
-.val-pos { color: var(--c-green); }
-.val-neg { color: var(--c-red); }
+.val-pos { color: #1a7c4e; }
+.val-neg { color: #c0392b; }
 .val-pct {
-  color: var(--c-muted);
-  font-size: .76rem;
+  color: #9b9b8e !important;
+  font-size: .72rem !important;
+  font-weight: 400 !important;
 }
 
-/* In highlight rows, values use softer tints */
-.row-highlight .val-pos { color: #6ee7b7; }
-.row-highlight .val-neg { color: #fca5a5; }
-.row-highlight .val-pct { color: rgba(255,255,255,.5); font-size: .72rem; }
+/* Em linhas highlight, cores mais suaves sobre fundo escuro */
+.row-highlight .val-pos { color: #86efac !important; }
+.row-highlight .val-neg { color: #fca5a5 !important; }
+.row-highlight .val-pct { color: rgba(255,255,255,.45) !important; }
 
-/* Drill-down indicator on DRE rows */
+/* Drill-down indicator */
 .row-drillable { cursor: pointer; }
-.row-drillable:hover td { background: #eef3fd !important; }
-.row-highlight.row-drillable:hover td { background: #162f52 !important; }
-.row-drillable.is-open td { background: #dbeafe !important; }
-.row-highlight.row-drillable.is-open td { background: #162f52 !important; }
+.row-drillable:hover td { background: #f2f2eb !important; }
+.row-highlight.row-drillable:hover td { background: #252535 !important; }
+.row-drillable.is-open td { background: #eaeae2 !important; }
+.row-highlight.row-drillable.is-open td { background: #252535 !important; }
 
 /* ============================================================
    DRILL-DOWN DRAWER
@@ -1077,21 +1081,21 @@ body {
 
 /* Conta individual */
 .idw-conta-row td {
-  background: #eef3fd !important;
+  background: #f5f5ee !important;
   font-size: .8rem;
-  border-bottom: 1px solid #c7d8f5 !important;
+  border-bottom: 1px solid #ddd8cc !important;
 }
-.idw-conta-row td:nth-child(2) { padding-left: 3rem; color: var(--c-muted); }
-.idw-conta-row:hover td { background: #dbeafe !important; }
+.idw-conta-row td:nth-child(2) { padding-left: 3rem; color: #5a5a5a; }
+.idw-conta-row:hover td { background: #ebebdf !important; }
 
 /* Linha de total do sub-grupo */
 .idw-total-row td {
-  background: #dbeafe !important;
+  background: #e8e8de !important;
   font-weight: 700;
   font-size: .82rem;
-  border-top: 2px solid #93c5fd !important;
-  border-bottom: 2px solid #93c5fd !important;
-  color: var(--c-navy-md) !important;
+  border-top: 2px solid #c8c4b8 !important;
+  border-bottom: 2px solid #c8c4b8 !important;
+  color: #1a1a2e !important;
 }
 .idw-total-row td:nth-child(2) { padding-left: 3rem; }
 
