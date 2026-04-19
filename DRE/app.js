@@ -630,7 +630,7 @@ function renderizarTabela(periodos, calculado, total) {
     [...periodos, 'total'].forEach(p => {
       const dados     = p === 'total' ? total : calculado[p];
       const valor     = dados?.[linha.id] ?? 0;
-      const recBruta  = p === 'total' ? (total.receita_bruta || 0) : (calculado[p]?.receita_bruta || 0);
+      const recBruta  = p === 'total' ? (total.receita_liquida || 0) : (calculado[p]?.receita_liquida || 0);
 
       const tdVal = document.createElement('td');
       tdVal.textContent = formatBRL(valor);
@@ -776,7 +776,7 @@ function construirLinhasDetalhe(linhaId, linhaLabel, periodos, calculado, total)
     // Valores por período + total
     [...periodos, 'total'].forEach(p => {
       const val = getValFn(p);
-      const rb  = p === 'total' ? (total.receita_bruta || 0) : (calculado[p]?.receita_bruta || 0);
+      const rb  = p === 'total' ? (total.receita_liquida || 0) : (calculado[p]?.receita_liquida || 0);
 
       const tdVal = document.createElement('td');
       tdVal.textContent = formatBRL(val);
