@@ -142,66 +142,63 @@
           <div class="dash-period-bar" id="dashPeriodBar"></div>
         </section>
 
-        <section class="kpis-section">
-          <div class="kpis-grid dash-kpis-grid">
-            <div class="kpi-card kpi-receita">
-              <div class="kpi-label">Receita Bruta</div>
-              <div class="kpi-value" id="dashKpiRBVal">—</div>
-              <div class="kpi-meta" id="dashKpiRBMeta"></div>
-            </div>
-            <div class="kpi-card kpi-lb">
-              <div class="kpi-label">Lucro Bruto</div>
-              <div class="kpi-value" id="dashKpiLBVal">—</div>
-              <div class="kpi-meta" id="dashKpiLBMeta">Margem: —</div>
-            </div>
-            <div class="kpi-card kpi-ebitda">
-              <div class="kpi-label">EBITDA</div>
-              <div class="kpi-value" id="dashKpiEBVal">—</div>
-              <div class="kpi-meta" id="dashKpiEBMeta">Margem: —</div>
-            </div>
-            <div class="kpi-card kpi-ll">
-              <div class="kpi-label">Lucro Líquido</div>
-              <div class="kpi-value" id="dashKpiLLVal">—</div>
-              <div class="kpi-meta" id="dashKpiLLMeta">Margem: —</div>
-            </div>
-            <div class="kpi-card kpi-margem">
-              <div class="kpi-label">Margem EBITDA</div>
-              <div class="kpi-value" id="dashKpiMEBVal">—</div>
-              <div class="kpi-meta" id="dashKpiMEBMeta">% sobre Receita</div>
-            </div>
-          </div>
-        </section>
+        <!-- Grid unificado: KPI cards (linha 1) + gráficos de barras (linha 2) -->
+        <div class="dash-unified-grid">
 
-        <section class="dash-charts-section">
-          <div class="charts-grid">
-            <div class="chart-card">
-              <div class="chart-card-header">
-                <h3>Evolução por Período</h3>
-                <span class="chart-hint">Barras = EBITDA · Linha = Lucro Líquido</span>
-              </div>
-              <div class="chart-wrapper">
-                <canvas id="dashChart1"></canvas>
-              </div>
-            </div>
-            <div class="chart-card">
-              <div class="chart-card-header">
-                <h3>Margens (%)</h3>
-                <span class="chart-hint">Margem Bruta · EBITDA · Lucro Líquido</span>
-              </div>
-              <div class="chart-wrapper">
-                <canvas id="dashChart2"></canvas>
-              </div>
-            </div>
+          <!-- Linha 1: KPI cards — mesmas 4 colunas dos gráficos -->
+          <div class="kpi-card kpi-receita">
+            <div class="kpi-label">Receita Bruta</div>
+            <div class="kpi-value" id="dashKpiRBVal">—</div>
+            <div class="kpi-meta" id="dashKpiRBMeta"></div>
           </div>
-        </section>
+          <div class="kpi-card kpi-lb">
+            <div class="kpi-label">Receita Líquida</div>
+            <div class="kpi-value" id="dashKpiRLVal">—</div>
+            <div class="kpi-meta" id="dashKpiRLMeta">—</div>
+          </div>
+          <div class="kpi-card kpi-ebitda">
+            <div class="kpi-label">EBITDA</div>
+            <div class="kpi-value" id="dashKpiEBVal">—</div>
+            <div class="kpi-meta" id="dashKpiEBMeta">Margem: —</div>
+          </div>
+          <div class="kpi-card kpi-ll">
+            <div class="kpi-label">Lucro Líquido</div>
+            <div class="kpi-value" id="dashKpiLLVal">—</div>
+            <div class="kpi-meta" id="dashKpiLLMeta">Margem: —</div>
+          </div>
 
-        <section class="dash-despesas-section">
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <h3>Composição de Despesas</h3>
-              <span class="chart-hint" id="dashDespPeriodoLabel"></span>
-            </div>
-            <div class="dash-despesas-bars" id="dashDespBars"></div>
+          <!-- Linha 2: gráficos de barras mensais -->
+          <div class="chart-card dash-chart-mini">
+            <div class="dash-chart-label">Receita Bruta</div>
+            <div class="dash-chart-sub">por mês · R$</div>
+            <div class="dash-chart-wrap"><canvas id="dashChart1"></canvas></div>
+          </div>
+          <div class="chart-card dash-chart-mini">
+            <div class="dash-chart-label">Receita Líquida</div>
+            <div class="dash-chart-sub">por mês · R$</div>
+            <div class="dash-chart-wrap"><canvas id="dashChart2"></canvas></div>
+          </div>
+          <div class="chart-card dash-chart-mini">
+            <div class="dash-chart-label">EBITDA</div>
+            <div class="dash-chart-sub">por mês · R$</div>
+            <div class="dash-chart-wrap"><canvas id="dashChart3"></canvas></div>
+          </div>
+          <div class="chart-card dash-chart-mini">
+            <div class="dash-chart-label">Lucro Líquido</div>
+            <div class="dash-chart-sub">por mês · R$</div>
+            <div class="dash-chart-wrap"><canvas id="dashChart4"></canvas></div>
+          </div>
+
+        </div>
+
+        <!-- Ranking BU — full width -->
+        <section class="table-section dash-ranking-section">
+          <div class="section-header">
+            <h2>Receita Bruta por Unidade de Negócio</h2>
+            <span class="bp-hint">Ranking acumulado · ordenado por maior faturamento</span>
+          </div>
+          <div class="table-wrapper dash-ranking-card">
+            <div class="dash-ranking-wrap"><canvas id="dashChartBU"></canvas></div>
           </div>
         </section>
 

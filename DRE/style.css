@@ -1131,73 +1131,60 @@ body {
   color: #fff;
 }
 
-/* 5-column KPI grid for dashboard */
-.dash-kpis-grid {
-  grid-template-columns: repeat(5, 1fr) !important;
-}
-.kpi-margem { border-top-color: #64748b; }
+/* ── DASHBOARD: grid unificado KPI cards + gráficos ── */
 
-.dash-charts-section { margin-bottom: 1.5rem; }
-
-.dash-despesas-section { margin-bottom: 2rem; }
-.dash-despesas-section .chart-card { padding: 1.25rem 1.5rem; }
-
-.dash-despesas-bars {
-  display: flex;
-  flex-direction: column;
-  gap: .75rem;
-  padding-top: .25rem;
-}
-
-.desp-bar-row {
+/* Um único grid de 4 colunas: cards na linha 1, gráficos na linha 2 */
+.dash-unified-grid {
   display: grid;
-  grid-template-columns: 220px 1fr 130px;
-  align-items: center;
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.desp-bar-label {
-  font-size: .82rem;
-  color: var(--c-text);
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Mini gráfico dentro do grid */
+.dash-chart-mini {
+  padding: 1rem 1.1rem .9rem;
 }
 
-.desp-bar-track {
-  height: 20px;
-  background: #f1f5f9;
-  border-radius: 4px;
-  overflow: hidden;
+.dash-chart-label {
+  font-size: .7rem;
+  font-weight: 800;
+  color: var(--c-navy-md);
+  text-transform: uppercase;
+  letter-spacing: .07em;
 }
 
-.desp-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width .4s ease;
-  min-width: 2px;
+.dash-chart-sub {
+  font-size: .62rem;
+  color: var(--c-light);
+  margin-top: .15rem;
 }
 
-.desp-bar-val {
-  text-align: right;
-  font-size: .82rem;
-  font-weight: 700;
-  color: var(--c-text);
-  white-space: nowrap;
+.dash-chart-wrap {
+  position: relative;
+  height: 190px;
+  margin-top: .75rem;
 }
 
-@media (max-width: 1300px) {
-  .dash-kpis-grid { grid-template-columns: repeat(3, 1fr) !important; }
+/* Ranking BU */
+.dash-ranking-section { margin-bottom: 1.5rem; }
+
+.dash-ranking-card {
+  padding: 1.25rem 1.5rem 1.5rem;
 }
-@media (max-width: 900px) {
-  .dash-kpis-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  .desp-bar-row { grid-template-columns: 160px 1fr 100px; }
+
+.dash-ranking-wrap {
+  position: relative;
+  /* Altura dinâmica: mínimo 260px, cresce conforme BUs */
+  min-height: 260px;
+  height: 320px;
+}
+
+@media (max-width: 1100px) {
+  .dash-unified-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
-  .dash-kpis-grid { grid-template-columns: 1fr !important; }
-  .desp-bar-row { grid-template-columns: 1fr; }
-  .desp-bar-label { overflow: visible; white-space: normal; }
+  .dash-unified-grid { grid-template-columns: 1fr; }
 }
 
 /* ============================================================

@@ -25,6 +25,7 @@ const MESES_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','N
 function classificarConta(conta) {
   const c = String(conta || '').trim();
   if (c.startsWith('3101'))    return 'receita_bruta';
+  if (c.startsWith('3103001')) return 'devolucoes';   // Devoluções de vendas — já embutidas na Receita Bruta
   if (c.startsWith('3103'))    return 'deducoes';
   if (c.startsWith('3303') ||
       c.startsWith('3305'))    return 'cmv';
@@ -67,21 +68,21 @@ const DRE_LINHAS = [
 // ── DRILL-DOWN: mapa de categorias por linha ─────────────────
 
 const DRILL_MAPA = {
-  receita_bruta:        ['receita_bruta'],
+  receita_bruta:        ['receita_bruta', 'devolucoes'],
   deducoes:             ['deducoes'],
-  receita_liquida:      ['receita_bruta', 'deducoes'],
+  receita_liquida:      ['receita_bruta', 'devolucoes', 'deducoes'],
   cmv:                  ['cmv'],
-  lucro_bruto:          ['receita_bruta', 'deducoes', 'cmv'],
+  lucro_bruto:          ['receita_bruta', 'devolucoes', 'deducoes', 'cmv'],
   despesas_vendas:      ['despesas_vendas'],
   despesas_pessoal:     ['despesas_pessoal'],
   despesas_admin:       ['despesas_admin'],
-  ebitda:               ['receita_bruta', 'deducoes', 'cmv', 'despesas_vendas', 'despesas_pessoal', 'despesas_admin'],
+  ebitda:               ['receita_bruta', 'devolucoes', 'deducoes', 'cmv', 'despesas_vendas', 'despesas_pessoal', 'despesas_admin'],
   depreciacao:          ['depreciacao'],
-  ebit:                 ['receita_bruta', 'deducoes', 'cmv', 'despesas_vendas', 'despesas_pessoal', 'despesas_admin', 'depreciacao'],
+  ebit:                 ['receita_bruta', 'devolucoes', 'deducoes', 'cmv', 'despesas_vendas', 'despesas_pessoal', 'despesas_admin', 'depreciacao'],
   resultado_financeiro: ['resultado_financeiro'],
-  lair:                 ['receita_bruta', 'deducoes', 'cmv', 'despesas_vendas', 'despesas_pessoal', 'despesas_admin', 'depreciacao', 'resultado_financeiro'],
+  lair:                 ['receita_bruta', 'devolucoes', 'deducoes', 'cmv', 'despesas_vendas', 'despesas_pessoal', 'despesas_admin', 'depreciacao', 'resultado_financeiro'],
   ir_csll:              ['ir_csll'],
-  lucro_liquido:        ['receita_bruta', 'deducoes', 'cmv', 'despesas_vendas', 'despesas_pessoal', 'despesas_admin', 'depreciacao', 'resultado_financeiro', 'ir_csll'],
+  lucro_liquido:        ['receita_bruta', 'devolucoes', 'deducoes', 'cmv', 'despesas_vendas', 'despesas_pessoal', 'despesas_admin', 'depreciacao', 'resultado_financeiro', 'ir_csll'],
 };
 
 // ── LABELS DE SUBGRUPOS DO BALANÇO ───────────────────────────
@@ -128,6 +129,9 @@ let dashPeriodo  = null;        // null = Acumulado; string = período seleciona
 let drePeriodo   = null;        // null = Acumulado; string = período selecionado na DRE
 let chartDash1   = null;
 let chartDash2   = null;
+let chartDash3   = null;
+let chartDash4   = null;
+let chartDash5   = null;
 
 // ── LEITURA DO ARQUIVO ───────────────────────────────────────
 
@@ -355,6 +359,9 @@ document.getElementById('btnNewFile').addEventListener('click', () => {
   dashPeriodo  = null;
   if (chartDash1) { chartDash1.destroy(); chartDash1 = null; }
   if (chartDash2) { chartDash2.destroy(); chartDash2 = null; }
+  if (chartDash3) { chartDash3.destroy(); chartDash3 = null; }
+  if (chartDash4) { chartDash4.destroy(); chartDash4 = null; }
+  if (chartDash5) { chartDash5.destroy(); chartDash5 = null; }
   CloudStorage.remove('dados_brutos').catch(() => {});
   document.getElementById('tabNav').style.display  = 'none';
   document.getElementById('dreSection').style.display  = 'block';
@@ -452,8 +459,9 @@ function processarDRE(rows, filtFilial, filtBU, modo) {
     const m = mapa[p];
     const c = {};
 
-    c.receita_bruta        = m.receita_bruta        || 0;
-    c.deducoes             = m.deducoes             || 0;   // negativo
+    c.devolucoes           = m.devolucoes           || 0;   // negativo — já embutido na Receita Bruta
+    c.receita_bruta        = (m.receita_bruta || 0) + c.devolucoes;  // Receita Bruta líquida de devoluções
+    c.deducoes             = m.deducoes             || 0;   // apenas deduções fiscais (ICMS, PIS, COFINS...)
     c.receita_liquida      = c.receita_bruta + c.deducoes;
 
     c.cmv                  = m.cmv                  || 0;   // negativo
@@ -966,152 +974,152 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── DASHBOARD ────────────────────────────────────────────────
 
+/** Agrega Receita Bruta por BU a partir dos dados brutos */
+function calcularRankingBU(periodoFiltro) {
+  const mapa = {};
+  dadosBrutos.forEach(r => {
+    if (!r.CONTA || !r.DATA) return;
+    if (filtroFilial.size > 0 && !filtroFilial.has(r.FILIAL_NOME)) return;
+    if (filtroBU.size     > 0 && !filtroBU.has(r.BU))             return;
+    const cat = classificarConta(r.CONTA);
+    if (cat !== 'receita_bruta' && cat !== 'devolucoes') return;
+    const d = extrairData(r.DATA);
+    if (!d) return;
+    if (periodoFiltro && chavePeriodo(d, modoVisualizacao) !== periodoFiltro) return;
+    const bu = r.BU || 'Sem BU';
+    let saldo = parseFloat(r.SALDO);
+    if (isNaN(saldo)) saldo = (parseFloat(r.VALOR_DEBITO) || 0) - (parseFloat(r.VALOR_CREDITO) || 0);
+    mapa[bu] = (mapa[bu] || 0) + (-saldo);
+  });
+  return Object.entries(mapa)
+    .map(([bu, val]) => ({ bu, val }))
+    .sort((a, b) => b.val - a.val);
+}
+
 function renderizarDashboard(periodos, calculado, total) {
-  // Period selector
+  // Barra de períodos
   const bar = document.getElementById('dashPeriodBar');
   bar.innerHTML = '';
-
   const criarBtnPeriodo = (chave, label) => {
     const btn = document.createElement('button');
     btn.className = `dash-pb${dashPeriodo === chave ? ' active' : ''}`;
     btn.textContent = label;
-    btn.addEventListener('click', () => {
-      dashPeriodo = chave;
-      renderizarDashboard(periodos, calculado, total);
-    });
+    btn.addEventListener('click', () => { dashPeriodo = chave; renderizarDashboard(periodos, calculado, total); });
     return btn;
   };
-
   bar.appendChild(criarBtnPeriodo(null, 'Acumulado'));
   periodos.forEach(p => bar.appendChild(criarBtnPeriodo(p, labelPeriodo(p, modoVisualizacao))));
 
-  // Dados do período selecionado
+  // KPIs — usam o período selecionado (ou total acumulado)
   const dados = dashPeriodo ? (calculado[dashPeriodo] || {}) : total;
-  const rb = dados.receita_bruta    || 0;
-  const lb = dados.lucro_bruto      || 0;
-  const eb = dados.ebitda           || 0;
-  const ll = dados.lucro_liquido    || 0;
+  const rb = dados.receita_bruta   || 0;
+  const rl = dados.receita_liquida || 0;
+  const eb = dados.ebitda          || 0;
+  const ll = dados.lucro_liquido   || 0;
 
-  const setDashKPI = (valId, val, metaId, metaText) => {
+  const setVal = (valId, val, metaId, metaText) => {
     const el = document.getElementById(valId);
+    if (!el) return;
     el.textContent = formatBRL(val);
     el.className = `kpi-value ${val >= 0 ? 'val-pos' : 'val-neg'}`;
-    if (metaId) document.getElementById(metaId).textContent = metaText;
+    if (metaId) { const m = document.getElementById(metaId); if (m) m.textContent = metaText; }
   };
 
-  setDashKPI('dashKpiRBVal', rb, 'dashKpiRBMeta',
+  setVal('dashKpiRBVal', rb, 'dashKpiRBMeta',
     dashPeriodo ? labelPeriodo(dashPeriodo, modoVisualizacao) : `${periodos.length} período(s)`);
-  setDashKPI('dashKpiLBVal', lb, 'dashKpiLBMeta', `Margem: ${pct(lb, rb)}`);
-  setDashKPI('dashKpiEBVal', eb, 'dashKpiEBMeta', `Margem: ${pct(eb, rb)}`);
-  setDashKPI('dashKpiLLVal', ll, 'dashKpiLLMeta', `Margem: ${pct(ll, rb)}`);
+  setVal('dashKpiRLVal', rl, 'dashKpiRLMeta', `${pct(rl, rb)} da R. Bruta`);
+  setVal('dashKpiEBVal', eb, 'dashKpiEBMeta', `Margem: ${pct(eb, rl)}`);
+  setVal('dashKpiLLVal', ll, 'dashKpiLLMeta', `Margem: ${pct(ll, rl)}`);
 
-  const margEB = rb ? (eb / rb) * 100 : 0;
-  const elMEB = document.getElementById('dashKpiMEBVal');
-  elMEB.textContent = isNaN(margEB) ? '—' : margEB.toFixed(1) + '%';
-  elMEB.className   = `kpi-value ${margEB >= 0 ? 'val-pos' : 'val-neg'}`;
-  document.getElementById('dashKpiMEBMeta').textContent = '% sobre Receita';
+  // Gráficos de barras — sempre mostram todos os períodos para visualizar tendência
+  const labels = periodos.map(p => labelPeriodo(p, modoVisualizacao));
 
-  // Gráfico 1: Evolução EBITDA (barras) + Lucro Líquido (linha)
-  const labels2     = periodos.map(p => labelPeriodo(p, modoVisualizacao));
-  const ebitdaArr   = periodos.map(p => calculado[p]?.ebitda        || 0);
-  const llArr       = periodos.map(p => calculado[p]?.lucro_liquido || 0);
-
-  if (chartDash1) chartDash1.destroy();
-  chartDash1 = new Chart(document.getElementById('dashChart1').getContext('2d'), {
-    data: {
-      labels: labels2,
-      datasets: [
-        {
-          type: 'bar',
-          label: 'EBITDA',
-          data: ebitdaArr,
-          backgroundColor: ebitdaArr.map(v => corSinal(v, CORES.ambar, CORES.vermelho)),
-          borderRadius: 5,
-          order: 2,
+  const makeBarChart = (canvasId, data, color, existing) => {
+    if (existing) existing.destroy();
+    return new Chart(document.getElementById(canvasId).getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: color + '30',
+          borderColor: color,
+          borderWidth: 2,
+          borderRadius: 6,
+          borderSkipped: false,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ' ' + formatBRL(ctx.raw) } },
         },
-        {
-          type: 'line',
-          label: 'Lucro Líquido',
-          data: llArr,
-          borderColor: '#059669',
-          backgroundColor: CORES.verdeLt,
-          borderWidth: 2.5,
-          pointRadius: 5,
-          pointBackgroundColor: llArr.map(v => corSinal(v, '#059669', '#dc2626')),
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          tension: 0.35,
-          fill: false,
-          order: 1,
+        scales: {
+          y: {
+            ticks: { callback: v => formatBRLCurto(v), font: { size: 10 }, color: '#94a3b8' },
+            grid: { color: '#f1f5f9' },
+            border: { display: false },
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 11, weight: '600' }, color: '#64748b' },
+          },
         },
-      ],
-    },
-    options: opcoesGrafico({
-      tooltip: ctx => `${ctx.dataset.label}: ${formatBRL(ctx.raw)}`,
-      tickY: v => formatBRLCurto(v),
-    }),
-  });
+      },
+    });
+  };
 
-  // Gráfico 2: Margens %
-  const margBrutaArr = periodos.map(p => {
-    const c = calculado[p] || {};
-    return c.receita_bruta ? (c.lucro_bruto / c.receita_bruta) * 100 : 0;
-  });
-  const margEBArr = periodos.map(p => {
-    const c = calculado[p] || {};
-    return c.receita_bruta ? (c.ebitda / c.receita_bruta) * 100 : 0;
-  });
-  const margLLArr = periodos.map(p => {
-    const c = calculado[p] || {};
-    return c.receita_bruta ? (c.lucro_liquido / c.receita_bruta) * 100 : 0;
-  });
+  chartDash1 = makeBarChart('dashChart1', periodos.map(p => calculado[p]?.receita_bruta   || 0), '#1d4ed8', chartDash1);
+  chartDash2 = makeBarChart('dashChart2', periodos.map(p => calculado[p]?.receita_liquida || 0), '#0891b2', chartDash2);
+  chartDash3 = makeBarChart('dashChart3', periodos.map(p => calculado[p]?.ebitda          || 0), '#d97706', chartDash3);
+  chartDash4 = makeBarChart('dashChart4', periodos.map(p => calculado[p]?.lucro_liquido   || 0), '#059669', chartDash4);
 
-  if (chartDash2) chartDash2.destroy();
-  chartDash2 = new Chart(document.getElementById('dashChart2').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: labels2,
-      datasets: [
-        { label: 'Margem Bruta',   data: margBrutaArr, borderColor: CORES.azul,    backgroundColor: CORES.azulLt,   borderWidth: 2.5, pointRadius: 4, tension: 0.35, fill: false },
-        { label: 'Margem EBITDA',  data: margEBArr,    borderColor: CORES.ambar,   backgroundColor: 'transparent',  borderWidth: 2.5, pointRadius: 4, tension: 0.35, fill: false },
-        { label: 'Margem LL',      data: margLLArr,    borderColor: CORES.verde,   backgroundColor: CORES.verdeLt,  borderWidth: 2.5, pointRadius: 4, tension: 0.35, fill: false },
-      ],
-    },
-    options: opcoesGrafico({
-      tooltip: ctx => `${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`,
-      tickY: v => v.toFixed(1) + '%',
-    }),
-  });
+  // Ranking de BU
+  const ranking = calcularRankingBU(dashPeriodo);
+  if (chartDash5) { chartDash5.destroy(); chartDash5 = null; }
 
-  // Barras de composição de despesas (período selecionado)
-  const barsEl = document.getElementById('dashDespBars');
-  barsEl.innerHTML = '';
-  document.getElementById('dashDespPeriodoLabel').textContent =
-    dashPeriodo ? labelPeriodo(dashPeriodo, modoVisualizacao) : 'Acumulado';
-
-  const despesas = [
-    { label: 'Despesas com Vendas',        val: Math.abs(dados.despesas_vendas  || 0), cor: '#2563eb' },
-    { label: 'Despesas com Pessoal',       val: Math.abs(dados.despesas_pessoal || 0), cor: '#7c3aed' },
-    { label: 'Despesas Administrativas',   val: Math.abs(dados.despesas_admin   || 0), cor: '#d97706' },
-    { label: 'Depreciação',                val: Math.abs(dados.depreciacao      || 0), cor: '#64748b' },
-    { label: 'CMV / CPV',                  val: Math.abs(dados.cmv              || 0), cor: '#dc2626' },
-  ].filter(d => d.val > 0);
-
-  const maxDesp = Math.max(...despesas.map(d => d.val), 1);
-
-  despesas.sort((a, b) => b.val - a.val).forEach(d => {
-    const pctWidth = (d.val / maxDesp) * 100;
-    const row = document.createElement('div');
-    row.className = 'desp-bar-row';
-    row.innerHTML =
-      `<span class="desp-bar-label">${d.label}</span>` +
-      `<div class="desp-bar-track"><div class="desp-bar-fill" style="width:${pctWidth}%;background:${d.cor}"></div></div>` +
-      `<span class="desp-bar-val">${formatBRL(d.val)}</span>`;
-    barsEl.appendChild(row);
-  });
-
-  if (!despesas.length) {
-    barsEl.innerHTML = '<p style="color:var(--c-muted);font-size:.85rem;padding:.5rem 0">Sem despesas no período.</p>';
+  const buCanvas = document.getElementById('dashChartBU');
+  if (buCanvas && ranking.length > 0) {
+    const PALETTE = ['#1d4ed8','#0891b2','#d97706','#059669','#7c3aed','#db2777','#ea580c','#65a30d'];
+    chartDash5 = new Chart(buCanvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ranking.map(r => r.bu),
+        datasets: [{
+          data: ranking.map(r => r.val),
+          backgroundColor: ranking.map((_, i) => PALETTE[i % PALETTE.length] + '30'),
+          borderColor:     ranking.map((_, i) => PALETTE[i % PALETTE.length]),
+          borderWidth: 2,
+          borderRadius: 6,
+          borderSkipped: false,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ' ' + formatBRL(ctx.raw) } },
+        },
+        scales: {
+          x: {
+            ticks: { callback: v => formatBRLCurto(v), font: { size: 10 }, color: '#94a3b8' },
+            grid: { color: '#f1f5f9' },
+            border: { display: false },
+          },
+          y: {
+            grid: { display: false },
+            ticks: { font: { size: 12, weight: '700' }, color: '#1e293b' },
+          },
+        },
+      },
+    });
+  } else if (buCanvas && !ranking.length) {
+    const ctx = buCanvas.getContext('2d');
+    ctx.clearRect(0, 0, buCanvas.width, buCanvas.height);
   }
 }
 
