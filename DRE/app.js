@@ -584,13 +584,11 @@ function renderizarTabela(periodos, calculado, total) {
   tr1.appendChild(criarTH(''));
   tr1.appendChild(criarTH('Descrição'));
   periodos.forEach(p => {
-    const th = criarTH(labelPeriodo(p, modoVisualizacao), { colSpan: 2 });
-    th.style.textAlign = 'left';
-    tr1.appendChild(th);
+    tr1.appendChild(criarTH(labelPeriodo(p, modoVisualizacao))); // só sobre a coluna R$
+    tr1.appendChild(criarTH(''));                                 // vazio sobre AV%
   });
-  const thTotal = criarTH('Total', { colSpan: 2 });
-  thTotal.style.textAlign = 'left';
-  tr1.appendChild(thTotal);
+  tr1.appendChild(criarTH('Total')); // só sobre a coluna R$
+  tr1.appendChild(criarTH(''));      // vazio sobre AV%
   thead.appendChild(tr1);
 
   // Linha 2: sub-cabeçalhos R$ / AV%
