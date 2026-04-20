@@ -583,8 +583,14 @@ function renderizarTabela(periodos, calculado, total) {
   const tr1 = document.createElement('tr');
   tr1.appendChild(criarTH(''));
   tr1.appendChild(criarTH('Descrição'));
-  periodos.forEach(p => tr1.appendChild(criarTH(labelPeriodo(p, modoVisualizacao), { colSpan: 2 })));
-  tr1.appendChild(criarTH('Total', { colSpan: 2 }));
+  periodos.forEach(p => {
+    const th = criarTH(labelPeriodo(p, modoVisualizacao), { colSpan: 2 });
+    th.style.textAlign = 'left';
+    tr1.appendChild(th);
+  });
+  const thTotal = criarTH('Total', { colSpan: 2 });
+  thTotal.style.textAlign = 'left';
+  tr1.appendChild(thTotal);
   thead.appendChild(tr1);
 
   // Linha 2: sub-cabeçalhos R$ / AV%
@@ -1083,6 +1089,28 @@ function renderizarDashboard(periodos, calculado, total) {
   const buCanvas = document.getElementById('dashChartBU');
   if (buCanvas && ranking.length > 0) {
     const PALETTE = ['#1d4ed8','#0891b2','#d97706','#059669','#7c3aed','#db2777','#ea580c','#65a30d'];
+    const totalRanking = ranking.reduce((s, r) => s + r.val, 0);
+
+    // Plugin inline: desenha o % no final de cada barra
+    const pluginPctLabel = {
+      id: 'buPctLabels',
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        const meta = chart.getDatasetMeta(0);
+        ctx.save();
+        ctx.font = '700 11px Inter, sans-serif';
+        ctx.textBaseline = 'middle';
+        meta.data.forEach((bar, i) => {
+          const val = data.datasets[0].data[i];
+          const pctStr = totalRanking > 0 ? ((val / totalRanking) * 100).toFixed(1) + '%' : '';
+          // bar.x = borda direita da barra; bar.y = centro vertical
+          ctx.fillStyle = '#64748b';
+          ctx.fillText(pctStr, bar.x + 8, bar.y);
+        });
+        ctx.restore();
+      },
+    };
+
     chartDash5 = new Chart(buCanvas.getContext('2d'), {
       type: 'bar',
       data: {
@@ -1100,6 +1128,7 @@ function renderizarDashboard(periodos, calculado, total) {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        layout: { padding: { right: 52 } }, // espaço para o texto do %
         plugins: {
           legend: { display: false },
           tooltip: { callbacks: { label: ctx => ' ' + formatBRL(ctx.raw) } },
@@ -1116,6 +1145,7 @@ function renderizarDashboard(periodos, calculado, total) {
           },
         },
       },
+      plugins: [pluginPctLabel],
     });
   } else if (buCanvas && !ranking.length) {
     const ctx = buCanvas.getContext('2d');
