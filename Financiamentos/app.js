@@ -258,28 +258,61 @@ function renderizarKPIsDash() {
   });
   const dias = proxGlobal ? diasAte(proxGlobal.vencimento) : null;
 
+  // Subtítulo da página
+  const credores = [...new Set(ativas.map(o => o.credor || o.contraparte).filter(Boolean))];
+  const mesAno = `${MESES_PT[hj.getMonth()]}/${hj.getFullYear()}`;
+  const subEl = document.getElementById('pageSub');
+  if (subEl) subEl.textContent =
+    `${ativas.length} operaç${ativas.length === 1 ? 'ão ativa' : 'ões ativas'}` +
+    (credores.length ? ` em ${credores.length} credor${credores.length > 1 ? 'es' : ''}` : '') +
+    ` · ${mesAno}`;
+
+  // Pill do próximo vencimento
+  const proxPill = dias === null ? '' :
+    dias < 0  ? `<span class="kpi-pill neg">${Math.abs(dias)}d atraso</span>` :
+    dias <= 7  ? `<span class="kpi-pill neg">${dias}d</span>` :
+    dias <= 30 ? `<span class="kpi-pill warn">${dias}d</span>` :
+                 `<span class="kpi-pill pos">${dias}d</span>`;
+
+  // Taxa média ponderada
+  const taxaMedia = ativas.length
+    ? ativas.reduce((s, o) => s + (o.taxaMensal || 0), 0) / ativas.length
+    : 0;
+
   document.getElementById('dashKpis').innerHTML = `
-    <div class="kpi-card kpi-total">
-      <div class="kpi-label">Dívida Total Ativa (BRL)</div>
+    <div class="kpi-card">
+      <div class="kpi-card-top">
+        <span class="kpi-label">Dívida Total Ativa</span>
+        <span class="kpi-pill pos">${ativas.length} ativa${ativas.length !== 1 ? 's' : ''}</span>
+      </div>
       <div class="kpi-value">${formatBRL(totalDivida)}</div>
-      <div class="kpi-meta">${ativas.length} operação(ões) ativa(s)</div>
+      <div class="kpi-meta">Consolidado BRL</div>
     </div>
-    <div class="kpi-card kpi-mes">
-      <div class="kpi-label">Parcelas do Mês</div>
+    <div class="kpi-card">
+      <div class="kpi-card-top">
+        <span class="kpi-label">Parcelas do Mês</span>
+        <span class="kpi-pill warn">${mesAno}</span>
+      </div>
       <div class="kpi-value">${formatBRL(totalMes)}</div>
-      <div class="kpi-meta">Competência ${MESES_PT[hj.getMonth()]}/${hj.getFullYear()}</div>
+      <div class="kpi-meta">Competência do mês corrente</div>
     </div>
-    <div class="kpi-card kpi-juros">
-      <div class="kpi-label">Juros Projetados (12m)</div>
+    <div class="kpi-card">
+      <div class="kpi-card-top">
+        <span class="kpi-label">Juros Projetados 12m</span>
+        <span class="kpi-pill pos">${taxaMedia > 0 ? taxaMedia.toFixed(3).replace('.',',') + '% a.m.' : '—'}</span>
+      </div>
       <div class="kpi-value">${formatBRL(juros12)}</div>
-      <div class="kpi-meta">Parcelas pendentes nos próximos 12 meses</div>
+      <div class="kpi-meta">Custo médio ponderado</div>
     </div>
-    <div class="kpi-card kpi-prox">
-      <div class="kpi-label">Próximo Vencimento</div>
-      <div class="kpi-value" style="font-size:1.15rem">${proxGlobal ? formatDate(proxGlobal.vencimento) : '—'}</div>
+    <div class="kpi-card">
+      <div class="kpi-card-top">
+        <span class="kpi-label">Próximo Vencimento</span>
+        ${proxPill}
+      </div>
+      <div class="kpi-value" style="font-size:1.25rem;letter-spacing:-.02em">${proxGlobal ? formatDate(proxGlobal.vencimento) : '—'}</div>
       <div class="kpi-meta ${dias !== null && dias <= 7 ? 'alert' : ''}">
         ${proxGlobal
-          ? `${formatBRL(proxGlobal.parcelaBRL || proxGlobal.parcela)} · ${dias < 0 ? Math.abs(dias)+'d em atraso' : dias === 0 ? 'Hoje!' : 'em '+dias+' dias'}`
+          ? `${formatBRL(proxGlobal.parcelaBRL || proxGlobal.parcela)}`
           : 'Sem parcelas pendentes'}
       </div>
     </div>`;
