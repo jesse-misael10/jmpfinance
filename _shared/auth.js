@@ -54,7 +54,7 @@ async function checkAppAccess() {
   if (!session) {
     // Não logado → redirecionar para login
     const returnTo = encodeURIComponent(window.location.href);
-    window.location.href = `/_shared/login.html?return=${returnTo}`;
+    window.location.href = `../_shared/login.html?return=${returnTo}`;
     return false;
   }
 
@@ -114,17 +114,22 @@ const Auth = {
 
 // ── Barra de usuário no header ────────────────────────────
 function injectUserBar(user) {
-  // Aguardar o DOM do app carregar
   const tryInject = () => {
-    const headerRight = document.querySelector('.header-right');
-    if (!headerRight) { setTimeout(tryInject, 100); return; }
+    // Suporta: #header-user (DRE), .header-right, ou .header-actions (Financiamentos)
+    const slot = document.getElementById('header-user') ||
+                 document.querySelector('.header-right') ||
+                 document.querySelector('.header-actions');
+    if (!slot) { setTimeout(tryInject, 100); return; }
 
     const bar = document.createElement('div');
-    bar.className = 'user-bar';
+    bar.style.cssText = 'display:flex;align-items:center;gap:.5rem;';
     bar.innerHTML = `
-      <span class="user-email">${user.email}</span>
-      <button class="btn btn-ghost btn-sm" id="btn-logout">Sair</button>`;
-    headerRight.prepend(bar);
+      <span style="font-size:.75rem;color:var(--t-ink-mute,#94a3b8);max-width:160px;
+                   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${user.email}</span>
+      <button id="btn-logout" style="font-size:.75rem;padding:.3rem .7rem;border-radius:6px;
+              border:1px solid var(--t-rule,#e2e8f0);background:transparent;
+              color:var(--t-ink-soft,#475569);cursor:pointer;">Sair</button>`;
+    slot.prepend(bar);
     document.getElementById('btn-logout').addEventListener('click', () => Auth.logout());
   };
   tryInject();

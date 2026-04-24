@@ -32,14 +32,30 @@ let opEditandoId = null;
 let drawerOpId   = null;
 
 // ── STORAGE ───────────────────────────────────────────────────
-function carregarDados() {
+async function carregarDados() {
+  // Tenta nuvem primeiro, cai em localStorage se não tiver auth
+  try {
+    if (typeof CloudStorage !== 'undefined') {
+      const cloud = await CloudStorage.get(STORAGE_KEY);
+      if (cloud && Array.isArray(cloud)) {
+        operacoes = cloud;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cloud));
+        return;
+      }
+    }
+  } catch {}
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     operacoes = raw ? JSON.parse(raw) : [];
   } catch { operacoes = []; }
 }
+
 function salvarDados() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(operacoes));
+  // Salva na nuvem em background sem bloquear a UI
+  if (typeof CloudStorage !== 'undefined') {
+    CloudStorage.set(STORAGE_KEY, operacoes).catch(() => {});
+  }
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
@@ -1336,8 +1352,13 @@ function renderizarWidgetCotacoes(rates, prevRates, timestamp, fromCache) {
 }
 
 // ── EVENT LISTENERS ───────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  carregarDados();
+document.addEventListener('DOMContentLoaded', async () => {
+  // Inicializa auth (verifica login + permissão) e depois carrega dados
+  if (typeof Auth !== 'undefined') {
+    const user = await Auth.init();
+    if (!user) return; // redirecionado para login
+  }
+  await carregarDados();
 
   document.querySelectorAll('.tab-btn').forEach(btn =>
     btn.addEventListener('click', () => mostrarAba(btn.dataset.tab)));
