@@ -1353,12 +1353,11 @@ function renderizarWidgetCotacoes(rates, prevRates, timestamp, fromCache) {
 
 // ── EVENT LISTENERS ───────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  // Inicializa auth (verifica login + permissão) e depois carrega dados
-  if (typeof Auth !== 'undefined') {
-    const user = await Auth.init();
-    if (!user) return; // redirecionado para login
-  }
-  await carregarDados();
+  // 1. Carrega do localStorage imediatamente — UI aparece sem delay
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    operacoes = raw ? JSON.parse(raw) : [];
+  } catch { operacoes = []; }
 
   document.querySelectorAll('.tab-btn').forEach(btn =>
     btn.addEventListener('click', () => mostrarAba(btn.dataset.tab)));
@@ -1388,7 +1387,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Botão atualizar cotações
   document.getElementById('btnAtualizarCotacoes').addEventListener('click', () => buscarCotacoes(true));
 
+  // 2. Renderiza imediatamente com dados locais
   renderizarDashboard();
+
+  // 3. Sincroniza com nuvem em background sem bloquear a UI
+  if (typeof Auth !== 'undefined') {
+    Auth.init().then(async user => {
+      if (!user) return;
+      try {
+        const cloud = await CloudStorage.get(STORAGE_KEY);
+        if (cloud && Array.isArray(cloud) && cloud.length > 0) {
+          operacoes = cloud;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(cloud));
+          renderizarDashboard();
+          if (abaAtual === 'operacoes') renderizarOperacoes();
+        }
+      } catch {}
+    }).catch(() => {});
+  }
 
   // Busca cotações automaticamente no carregamento (usa cache se disponível)
   buscarCotacoes(false);
