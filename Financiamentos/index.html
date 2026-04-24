@@ -1,11 +1,24 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-palette="azure" data-mode="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Empréstimos &amp; Financiamentos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../_shared/tokens.css" />
   <link rel="stylesheet" href="style.css">
+  <script>
+    // Aplica tema salvo antes do primeiro render para evitar flash
+    (function() {
+      try {
+        var t = JSON.parse(localStorage.getItem('opfin.theme.v1')) || {};
+        if (t.palette) document.documentElement.dataset.palette = t.palette;
+        if (t.mode)    document.documentElement.dataset.mode    = t.mode;
+      } catch(e) {}
+    })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -27,7 +40,23 @@
         <button class="tab-btn" data-tab="simulador">🧮 Simulador</button>
       </nav>
       <div class="header-actions">
-        <a href="/index.html" style="text-decoration:none;padding:4px 12px;background:rgba(15,32,68,.8);color:#fff;border:1.5px solid #2563eb;border-radius:6px;font-size:.78rem;font-weight:600;white-space:nowrap;">← Menu</a>
+        <!-- Theme switcher -->
+        <div class="theme-switcher" id="themeSwitcher">
+          <button class="theme-trigger" id="themeTrigger" aria-label="Mudar tema">
+            <span class="theme-trigger-swatch" id="themeSwatch"></span>
+            Tema
+            <span class="theme-caret"></span>
+          </button>
+          <div class="theme-popover" id="themePopover" style="display:none">
+            <div class="theme-pop-label">Paleta</div>
+            <div class="theme-swatches" id="themeSwatches"></div>
+            <div class="theme-mode-toggle">
+              <button class="theme-mode-btn" data-mode="light">☀ Claro</button>
+              <button class="theme-mode-btn" data-mode="dark">☽ Escuro</button>
+            </div>
+          </div>
+        </div>
+        <a href="/index.html" class="btn-secondary" style="text-decoration:none;font-size:.78rem;">← Menu</a>
         <button class="btn-primary" id="btnNovaOp">+ Nova Operação</button>
       </div>
     </div>
@@ -522,5 +551,96 @@
 
 </div>
 <script src="app.js"></script>
+<script>
+// ── THEME SWITCHER ──────────────────────────────────────────────
+(function() {
+  const LS_KEY = 'opfin.theme.v1';
+  const PALETTES = {
+    azure:      { label: 'Azul',     swatch: '#1e40af' },
+    forest:     { label: 'Verde',    swatch: '#1a4d3e' },
+    indigo:     { label: 'Índigo',   swatch: '#4338ca' },
+    graphite:   { label: 'Grafite',  swatch: '#1f2937' },
+    terracotta: { label: 'Terracota',swatch: '#b4532a' },
+  };
+
+  function getTheme() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; }
+  }
+  function saveTheme(p, m) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify({ palette: p, mode: m })); } catch {}
+  }
+
+  function applyTheme(palette, mode) {
+    document.documentElement.dataset.palette = palette;
+    document.documentElement.dataset.mode    = mode;
+    const swatchEl = document.getElementById('themeSwatch');
+    if (swatchEl) swatchEl.style.background = PALETTES[palette]?.swatch || '#1e40af';
+    document.querySelectorAll('.theme-mode-btn').forEach(btn =>
+      btn.classList.toggle('active', btn.dataset.mode === mode)
+    );
+    document.querySelectorAll('.theme-swatch-btn').forEach(btn =>
+      btn.classList.toggle('active', btn.dataset.palette === palette)
+    );
+    saveTheme(palette, mode);
+  }
+
+  function buildSwatches() {
+    const container = document.getElementById('themeSwatches');
+    if (!container) return;
+    const current = getTheme();
+    Object.entries(PALETTES).forEach(([key, def]) => {
+      const btn = document.createElement('button');
+      btn.className = 'theme-swatch-btn' + (current.palette === key ? ' active' : '');
+      btn.dataset.palette = key;
+      btn.title = def.label;
+      btn.innerHTML = `
+        <span class="theme-swatch-dot" style="background:${def.swatch}"></span>
+        <span class="theme-swatch-label">${def.label}</span>`;
+      btn.addEventListener('click', () => {
+        applyTheme(key, document.documentElement.dataset.mode || 'light');
+      });
+      container.appendChild(btn);
+    });
+  }
+
+  function init() {
+    const saved  = getTheme();
+    const palette = saved.palette || 'azure';
+    const mode    = saved.mode    || 'light';
+    applyTheme(palette, mode);
+    buildSwatches();
+
+    const trigger  = document.getElementById('themeTrigger');
+    const popover  = document.getElementById('themePopover');
+    const switcher = document.getElementById('themeSwitcher');
+
+    trigger?.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = popover.style.display === 'none';
+      popover.style.display = open ? 'block' : 'none';
+    });
+
+    document.addEventListener('click', e => {
+      if (!switcher?.contains(e.target)) popover.style.display = 'none';
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') popover.style.display = 'none';
+    });
+
+    document.querySelectorAll('.theme-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        applyTheme(document.documentElement.dataset.palette || 'azure', btn.dataset.mode);
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 </body>
 </html>
