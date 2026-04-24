@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Operações Financeiras — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  html, body { margin: 0; padding: 0; min-height: 100%; background: #f4f5f7; font-family: 'Geist', 'Inter', system-ui, sans-serif; }
+  #root { min-height: 100vh; }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="shared.jsx"></script>
+<script type="text/babel" src="neo-themed.jsx"></script>
+
+<script type="text/babel">
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "palette": "azure",
+    "mode": "dark"
+  }/*EDITMODE-END*/;
+
+  const LS_KEY = 'opfin.theme.v1';
+
+  function loadSavedTheme(defaults) {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return defaults;
+      const saved = JSON.parse(raw);
+      return { ...defaults, ...saved };
+    } catch (e) { return defaults; }
+  }
+
+  function App() {
+    // Tweak defaults act as the initial state; localStorage overrides them
+    // so end-users' in-product choices persist across refreshes.
+    const initial = loadSavedTheme(TWEAK_DEFAULTS);
+    const [tweaks, setTweak] = useTweaks(initial);
+
+    const setPalette = (key) => {
+      setTweak('palette', key);
+      try { localStorage.setItem(LS_KEY, JSON.stringify({ ...tweaks, palette: key })); } catch (e) {}
+    };
+    const setMode = (m) => {
+      setTweak('mode', m);
+      try { localStorage.setItem(LS_KEY, JSON.stringify({ ...tweaks, mode: m })); } catch (e) {}
+    };
+
+    const paletteDef = NEO_PALETTES[tweaks.palette] || NEO_PALETTES.forest;
+    const palette = tweaks.mode === 'dark' ? paletteDef.dark : paletteDef.light;
+
+    // Sync body bg so letterboxing matches theme
+    React.useEffect(() => {
+      document.body.style.background = palette.bg;
+      document.body.style.color = palette.ink;
+    }, [palette]);
+
+    return (
+      <React.Fragment>
+        <NeoDash
+          palette={palette}
+          paletteKey={tweaks.palette}
+          mode={tweaks.mode}
+          onPaletteChange={setPalette}
+          onModeChange={setMode}
+        />
+
+        <TweaksPanel title="Tweaks">
+          <TweakSection label="Tema padrão" />
+          <div style={{ fontSize: 11, color: '#64748b', padding: '0 0 10px', lineHeight: 1.4 }}>
+            Define o tema inicial que novos usuários veem. Cada usuário pode trocar pelo seletor no header — a escolha dele fica salva no navegador.
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, padding: '4px 0 12px' }}>
+            {Object.entries(NEO_PALETTES).map(([key, def]) => {
+              const selected = tweaks.palette === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setPalette(key)}
+                  title={def.label}
+                  style={{
+                    cursor: 'pointer',
+                    background: 'transparent',
+                    border: selected ? '2px solid #0c1220' : '2px solid transparent',
+                    borderRadius: 10,
+                    padding: 3,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  <span style={{
+                    width: 34, height: 34, borderRadius: 8,
+                    background: def.swatch,
+                    boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)',
+                  }} />
+                  <span style={{ fontSize: 10, color: selected ? '#0c1220' : '#64748b', fontWeight: selected ? 600 : 400, textAlign: 'center', lineHeight: 1.2 }}>
+                    {def.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <TweakRadio
+            label="Modo"
+            value={tweaks.mode}
+            onChange={setMode}
+            options={[
+              { value: 'light', label: 'Claro' },
+              { value: 'dark',  label: 'Escuro' },
+            ]}
+          />
+        </TweaksPanel>
+      </React.Fragment>
+    );
+  }
+
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<App />);
+</script>
+</body>
+</html>
