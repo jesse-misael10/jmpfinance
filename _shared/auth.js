@@ -104,7 +104,7 @@ const Auth = {
 
   async logout() {
     await db.auth.signOut();
-    window.location.href = '/_shared/login.html';
+    window.location.href = '../_shared/login.html';
   },
 
   getUser() {
